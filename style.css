@@ -1,58 +1,62 @@
-/* Search bar code */ 
-.search-header {
+/* Search bar code */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* The search input field */
+.search-input {
+  width: 100%;
+  height: 50px;
+  padding: 10px 20px 10px 50px; /* Left padding for the icon */
+  border-radius: 50px; /* Pill shape */
+  border: 2px solid #ced4da;
+  background-color: #fff;
+  color: #495057;
+  font-size: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Remove the default blue outline on focus */
+.search-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
+  padding-left: 20px; /* Reduce left padding on focus */
+  padding-right: 50px; /* Add right padding for the icon */
+}
+
+/* The search icon/button */
+.search-button {
+  position: absolute;
+  top: 50%;
+  left: 15px; /* Initial position on the left */
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #6c757d;
+  font-size: 1.3rem;
+  cursor: text; /* Initially acts as part of the input */
+  transition: all 0.3s ease-in-out;
+  padding: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  text-align: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
 }
 
-.search-header__input {
-  font-family: inherit;
-  font-size: 16px;
-  background-color: #ffffff;
-  border: solid 0.5px #525252;
-  color: #646464;
-  padding: 0.7rem 1rem;
-  border-radius: 25px;
-  width: 240px;
-  height: 48px;
-  transition: all ease-in-out 0.5s;
-  margin-right: -2rem;
-  opacity: 1;
-  text-align: center;
+/* Style changes when the input is focused */
+.search-input:focus + .search-button {
+  left: calc(100% - 45px); /* Move icon to the right end */
+  color: #fff;
+  background-color: #0d6efd;
+  border-radius: 50%;
+  cursor: pointer; /* Now it's a clickable button */
 }
 
-.search-header__input:hover,
-.search-header__input:focus {
-  box-shadow: 0 0 1em #00000013;
-}
-
-.search-header__input:focus {
-  outline: none;
-  background-color: #ffffffad;
-}
-
-.search-header__input::-webkit-input-placeholder {
-  font-weight: 100;
-  color: #3a3a3a;
-}
-
-.search-header__input:focus + .search-header__button {
-  background-color: transparent;
-}
-
-.search-header__button {
-  border: none;
-  background-color: transparent;
-  margin-top: 0.1em;
-}
-
-.search-header__button:hover {
-  cursor: pointer;
-}
-
-.search-header__icon {
-  height: 1.3em;
-  width: 1.3em;
-  fill: #3a3a3a;
+/* Add a hover effect when the button is active */
+.search-input:focus + .search-button:hover {
+  background-color: #0b5ed7;
 }
