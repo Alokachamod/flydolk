@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="bootstrap.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <link rel="icon" href="imgs/Flydo.png" type="logo">
 </head>
 
 <body>
@@ -35,8 +36,31 @@
                 </div>
               </form>
               <!-- Navigation Links -->
-              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0 offset-3">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Categories
+                    </a>
+                    <ul class="dropdown-menu mt-4">
+                        <li><a class="dropdown-item" href="#">Drones</a></li>
+                        <li><a class="dropdown-item" href="#">Action Cameras</a></li>
+                        <li><a class="dropdown-item" href="#">Accessories</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">All Categories</a></li>
+                    </ul>
+                </li>
+                <!-- END: BOOTSTRAP DROPDOWN AS A NAV LINK -->
+
+                <!-- Other example nav items -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Account</a>
+                </li>
               </ul>
 
               
