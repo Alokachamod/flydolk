@@ -16,7 +16,7 @@
   <div class="container-fluid">
     <div class="col-12">
       <div class="row">
-        <nav class="navbar navbar-expand-lg col-10 offset-1 mt-3 bg-light rounded-3 shadow-sm">
+        <nav class="navbar navbar-expand-lg col-10 offset-1 mt-3 bg-info rounded-3 shadow-sm">
           <div class="container-fluid">
             <a class="navbar-brand" href="#">
               <!-- Using a placeholder image -->
