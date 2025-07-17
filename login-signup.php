@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
     <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="imgs/Flydo.png" type="Logo" >
+    <link rel="icon" href="imgs/Flydo.png" type="Logo">
     <style>
         /* Basic Reset and Styling */
         * {
@@ -75,11 +76,15 @@
         }
 
         @keyframes show {
-            0%, 49.99% {
+
+            0%,
+            49.99% {
                 opacity: 0;
                 z-index: 1;
             }
-            50%, 100% {
+
+            50%,
+            100% {
                 opacity: 1;
                 z-index: 5;
             }
@@ -119,6 +124,7 @@
             color: #333;
             transition: all 0.3s ease-in-out;
         }
+
         .social-container a:hover {
             background-color: #2f80ed;
             color: #fff;
@@ -135,9 +141,11 @@
             text-decoration: none;
             margin: 15px 0;
         }
+
         a.forgot-password {
             transition: color 0.2s ease;
         }
+
         a.forgot-password:hover {
             color: #2f80ed;
         }
@@ -230,7 +238,7 @@
             transform: translateX(0);
             transition: transform 0.6s ease-in-out;
         }
-        
+
         .overlay-panel p {
             font-size: 14px;
             font-weight: 300;
@@ -255,28 +263,33 @@
         .login-container.right-panel-active .overlay-right {
             transform: translateX(20%);
         }
-        
+
         /* Bootstrap Responsive Overrides */
         @media (max-width: 767.98px) {
             .overlay-container {
                 display: none;
             }
+
             .form-container {
                 width: 100%;
             }
+
             .sign-in-container {
                 opacity: 1;
                 z-index: 2;
             }
+
             .sign-up-container {
                 opacity: 0;
                 z-index: 1;
             }
+
             .login-container.right-panel-active .sign-in-container {
                 transform: none;
                 opacity: 0;
                 z-index: 1;
             }
+
             .login-container.right-panel-active .sign-up-container {
                 transform: none;
                 opacity: 1;
@@ -284,9 +297,9 @@
                 animation: none;
             }
         }
-
     </style>
 </head>
+
 <body>
 
     <div class="login-container" id="container">
@@ -294,16 +307,12 @@
         <div class="form-container sign-up-container">
             <form action="#">
                 <h1>Create Account</h1>
-                <div class="social-container">
-                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
-                </div>
+
                 <span>or use your email for registration</span>
-                <input type="text" placeholder="Name" />
-                <input type="email" placeholder="Email" />
-                <input type="password" placeholder="Password" />
-                <button onclick="login();">Sign Up</button>
+                <input type="text" placeholder="Name" id="name" />
+                <input type="email" placeholder="Email" id="email" />
+                <input type="password" placeholder="Password" id="password" />
+                <button onclick="signup();">Sign Up</button>
                 <a href="#" class="d-md-none mt-3" id="signInMobile">Already have an account? Sign In</a>
             </form>
         </div>
@@ -312,11 +321,7 @@
         <div class="form-container sign-in-container">
             <form action="#">
                 <h1>Sign in</h1>
-                <div class="social-container">
-                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
-                </div>
+
                 <span>or use your account</span>
                 <input type="email" placeholder="Email" />
                 <input type="password" placeholder="Password" />
@@ -329,12 +334,18 @@
         <!-- Overlay for sliding animation -->
         <div class="overlay-container d-none d-md-block">
             <div class="overlay">
+                <!-- Left Overlay Panel -->
                 <div class="overlay-panel overlay-left">
+                    <!-- Replace this with your actual logo -->
+                    <img src="imgs/Flydo.png" alt="Logo"  height="75">
                     <h1>Welcome Back!</h1>
                     <p>To keep connected with us please login with your personal info</p>
                     <button class="ghost" id="signIn">Sign In</button>
                 </div>
+                <!-- Right Overlay Panel -->
                 <div class="overlay-panel overlay-right">
+                    <!-- Replace this with your actual logo -->
+                    <img src="imgs/Flydo.png" alt="Logo" height="75">
                     <h1>Hello, Friend!</h1>
                     <p>Enter your personal details and start your journey with us</p>
                     <button class="ghost" id="signUp">Sign Up</button>
@@ -349,7 +360,7 @@
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
         const container = document.getElementById('container');
-        
+
         const signUpButtonMobile = document.getElementById('signUpMobile');
         const signInButtonMobile = document.getElementById('signInMobile');
 
@@ -363,7 +374,7 @@
                 container.classList.remove('right-panel-active');
             });
         }
-        
+
         // Mobile Toggle
         signUpButtonMobile.addEventListener('click', (e) => {
             e.preventDefault();
@@ -374,8 +385,8 @@
             e.preventDefault();
             container.classList.remove('right-panel-active');
         });
-
     </script>
 
 </body>
+
 </html>
