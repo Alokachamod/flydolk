@@ -16,10 +16,41 @@ function handleSearch() {
 
 //sign in process 
 
-function signup() {
-    const name =document.getElementById("name");
-    const email =document.getElementById("email");
-    const password =document.getElementById("password");
+function signUp() {
+    var f =document.getElementById("fname");
+    var l =document.getElementById("lname");
+    var e =document.getElementById("email");
+    var p =document.getElementById("password");
+    var m =document.getElementById("mobile");
+    var g =document.getElement("gender")
+
+    var formData = new FormData();
+    formData.append("f", f.value);
+    formData.append("l", l.value);
+    formData.append("e", e.value);
+    formData.append("p", p.value);
+    formData.append("m", m.value);
+    formData.append("g", g.value);
+
+    var xhr = new XMLHttpRequest();
+
+    request.onreadystatechange = function () {
+        if (request.readyState == 4) {
+            var text = request.responseText;
+            if (text == "success") {
+                document.getElementById("msg").innerHTML = text;
+                document.getElementById("msg").className = "bi bi-check2-circle fs-5";
+                document.getElementById("alertdiv").className = "alert alert-success";
+                document.getElementById("msgdiv").className = "d-block";
+            } else {
+                document.getElementById("msg").innerHTML = text;
+                document.getElementById("msgdiv").className = "d-block"
+            }
+        }
+    }
+
+    request.open("POST", "", true);
+    request.send(form);
 
 
 }

@@ -11,7 +11,8 @@
     <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="imgs/Flydo.png" type="Logo">
+    <!-- Favicon -->
+    <link rel="icon" href="https://placehold.co/32x32/2f80ed/ffffff?text=F" type="image/png">
     <style>
         /* Basic Reset and Styling */
         * {
@@ -39,7 +40,8 @@
             overflow: hidden;
             width: 768px;
             max-width: 100%;
-            min-height: 480px;
+            min-height: 520px;
+            /* Increased height for more fields */
         }
 
         /* Form Container Styling */
@@ -95,7 +97,7 @@
             background-color: #fff;
             display: flex;
             flex-direction: column;
-            padding: 0 50px;
+            padding: 0 40px;
             height: 100%;
             justify-content: center;
             align-items: center;
@@ -108,31 +110,9 @@
             margin-bottom: 1rem;
         }
 
-        .social-container {
-            margin: 20px 0;
-        }
-
-        .social-container a {
-            border: 1px solid #ddd;
-            border-radius: 50%;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 5px;
-            height: 40px;
-            width: 40px;
-            color: #333;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .social-container a:hover {
-            background-color: #2f80ed;
-            color: #fff;
-            border-color: #2f80ed;
-        }
-
         span {
             font-size: 12px;
+            margin-bottom: 10px;
         }
 
         a {
@@ -151,14 +131,23 @@
         }
 
 
-        input {
+        input,
+        select {
             background-color: #eee;
             border: none;
-            padding: 12px 15px;
-            margin: 8px 0;
+            padding: 10px 15px;
+            margin: 6px 0;
             width: 100%;
             border-radius: 8px;
             outline: none;
+            font-size: 14px;
+        }
+
+        .name-container {
+            display: flex;
+            gap: 8px;
+            /* Adds space between the inputs */
+            width: 100%;
         }
 
         button {
@@ -239,6 +228,10 @@
             transition: transform 0.6s ease-in-out;
         }
 
+        .overlay-panel img {
+            margin-bottom: 1rem;
+        }
+
         .overlay-panel p {
             font-size: 14px;
             font-weight: 300;
@@ -266,12 +259,19 @@
 
         /* Bootstrap Responsive Overrides */
         @media (max-width: 767.98px) {
+            .login-container {
+                min-height: 100vh;
+                border-radius: 0;
+            }
+
             .overlay-container {
                 display: none;
             }
 
             .form-container {
                 width: 100%;
+                position: relative;
+                /* Change position for mobile flow */
             }
 
             .sign-in-container {
@@ -307,12 +307,28 @@
         <div class="form-container sign-up-container">
             <form action="#">
                 <h1>Create Account</h1>
-
                 <span>or use your email for registration</span>
-                <input type="text" placeholder="Name" id="name" />
+                <div class="col-12 d-none" id="msgdiv">
+                    <div class="alert alert-danger" role="alert" id="alertdiv">
+                        <i class="bi bi-x-octagon-fill fs-5" id="msg">
+
+                        </i>
+                    </div>
+                </div>
+                <div class="name-container">
+                    <input type="text" placeholder="First Name" id="fname" />
+                    <input type="text" placeholder="Last Name" id="lname" />
+                </div>
                 <input type="email" placeholder="Email" id="email" />
                 <input type="password" placeholder="Password" id="password" />
-                <button onclick="signup();">Sign Up</button>
+                <input type="tel" placeholder="Mobile" id="mobile" />
+                <select id="gender">
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+                <button>Sign Up</button>
                 <a href="#" class="d-md-none mt-3" id="signInMobile">Already have an account? Sign In</a>
             </form>
         </div>
@@ -321,8 +337,14 @@
         <div class="form-container sign-in-container">
             <form action="#">
                 <h1>Sign in</h1>
-
                 <span>or use your account</span>
+                <div class="col-12 d-none" id="msgdiv">
+                    <div class="alert alert-danger" role="alert" id="alertdiv">
+                        <i class="bi bi-x-octagon-fill fs-5" id="msg">
+
+                        </i>
+                    </div>
+                </div>
                 <input type="email" placeholder="Email" />
                 <input type="password" placeholder="Password" />
                 <a href="#" class="forgot-password">Forgot your password?</a>
@@ -337,7 +359,7 @@
                 <!-- Left Overlay Panel -->
                 <div class="overlay-panel overlay-left">
                     <!-- Replace this with your actual logo -->
-                    <img src="imgs/Flydo.png" alt="Logo"  height="75">
+                    <img src="imgs/Flydo.png" alt="Logo" height="75">
                     <h1>Welcome Back!</h1>
                     <p>To keep connected with us please login with your personal info</p>
                     <button class="ghost" id="signIn">Sign In</button>
@@ -356,6 +378,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
