@@ -307,7 +307,7 @@
         <div class="form-container sign-up-container">
             <form action="#">
                 <h1>Create Account</h1>
-                <span>or use your email for registration</span>
+                <br>
                 <div class="col-12 d-none" id="msgdiv">
                     <div class="alert alert-danger" role="alert" id="alertdiv">
                         <i class="bi bi-x-octagon-fill fs-5" id="msg">
@@ -315,20 +315,11 @@
                         </i>
                     </div>
                 </div>
-                <div class="name-container">
-                    <input type="text" placeholder="First Name" id="fname" />
-                    <input type="text" placeholder="Last Name" id="lname" />
-                </div>
+                <input type="text" placeholder="Name" id="name" />
                 <input type="email" placeholder="Email" id="email" />
                 <input type="password" placeholder="Password" id="password" />
                 <input type="tel" placeholder="Mobile" id="mobile" />
-                <select id="gender">
-                    <option value="" disabled selected>Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                </select>
-                <button>Sign Up</button>
+                <button onclick="signUp();">Sign Up</button>
                 <a href="#" class="d-md-none mt-3" id="signInMobile">Already have an account? Sign In</a>
             </form>
         </div>
@@ -379,6 +370,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="script.js"></script>
     <script>
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
