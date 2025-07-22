@@ -32,24 +32,62 @@ function signUp() {
 
   request.onreadystatechange = function () {
     if (request.readyState == 4) {
-        var text = request.responseText;
-        if (text == "success") {
-            Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'You have signed up successfully. You can now sign in.',
-          confirmButtonText: 'OK'
+      var text = request.responseText;
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have signed up successfully. You can now sign in.",
+          confirmButtonText: "OK",
         });
-        } else {
-            Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: text, 
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
         });
-        }
+      }
     }
-};
+  };
 
   request.open("POST", "signUpProcess.php", true);
+  request.send(form);
+}
+
+//sign in process
+
+function signin() {
+  //alert("Sign in button clicked");
+
+  var e = document.getElementById("email");
+  var p = document.getElementById("password");
+
+  var form = new FormData();
+  form.append("e", e.value);
+  form.append("p", p.value);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4) {
+      var text = request.responseText;
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have signed in successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.href = "index.php"; // Redirect to index.php after successful sign-in
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+
+    }
+  };
+  request.open("POST", "signInProcess.php", true);
   request.send(form);
 }

@@ -329,17 +329,11 @@
             <form action="#">
                 <h1>Sign in</h1>
                 <span>or use your account</span>
-                <div class="col-12 d-none" id="msgdiv">
-                    <div class="alert alert-danger" role="alert" id="alertdiv">
-                        <i class="bi bi-x-octagon-fill fs-5" id="msg">
-
-                        </i>
-                    </div>
-                </div>
-                <input type="email" placeholder="Email" />
-                <input type="password" placeholder="Password" />
+                <br>
+                <input type="email" placeholder="Email" id="email"/>
+                <input type="password" placeholder="Password" id="password"/>
                 <a href="#" class="forgot-password">Forgot your password?</a>
-                <button>Sign In</button>
+                <button onclick="signin();">Sign In</button>
                 <a href="#" class="d-md-none mt-3" id="signUpMobile">Don't have an account? Sign Up</a>
             </form>
         </div>
