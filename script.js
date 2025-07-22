@@ -57,37 +57,40 @@ function signUp() {
 //sign in process
 
 function signin() {
-  //alert("Sign in button clicked");
+    var e = document.getElementById("e").value;
+    var p = document.getElementById("p").value;
 
-  var e = document.getElementById("email");
-  var p = document.getElementById("password");
+    var form = new FormData();
+    // FIX: Append the variables e and p directly, not e.value and p.value
+    form.append("e", e);
+    form.append("p", p);
 
-  var form = new FormData();
-  form.append("e", e.value);
-  form.append("p", p.value);
-  var request = new XMLHttpRequest();
-  request.onreadystatechange = function () {
-    if (request.readyState == 4) {
-      var text = request.responseText;
-      if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "You have signed in successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = "index.php"; // Redirect to index.php after successful sign-in
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
-      }
+    var request = new XMLHttpRequest();
 
-    }
-  };
-  request.open("POST", "signInProcess.php", true);
-  request.send(form);
-}
+    request.onreadystatechange = function () {
+        // Check if the request is complete AND successful
+        if (request.readyState == 4 && request.status == 200) {
+            var text = request.responseText;
+
+            if (text == "success") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: "You have signed in successfully.",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    window.location.href = "index.php"; // Redirect after successful sign-in
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: text,
+                });
+            }
+        }
+    };
+
+    request.open("POST", "signInProcess.php", true);
+    request.send(form);
+}d  

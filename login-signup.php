@@ -330,8 +330,8 @@
                 <h1>Sign in</h1>
                 <span>or use your account</span>
                 <br>
-                <input type="email" placeholder="Email" id="email"/>
-                <input type="password" placeholder="Password" id="password"/>
+                <input type="email" placeholder="Email" id="e"/>
+                <input type="password" placeholder="Password" id="p"/>
                 <a href="#" class="forgot-password">Forgot your password?</a>
                 <button onclick="signin();">Sign In</button>
                 <a href="#" class="d-md-none mt-3" id="signUpMobile">Don't have an account? Sign Up</a>
