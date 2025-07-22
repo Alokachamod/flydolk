@@ -12,7 +12,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Favicon -->
-    <link rel="icon" href="https://placehold.co/32x32/2f80ed/ffffff?text=F" type="image/png">
+    <link rel="icon" href="imgs/Flydo.png" type="image/png">
     <style>
         /* Basic Reset and Styling */
         * {
