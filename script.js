@@ -93,4 +93,73 @@ function signin() {
 
     request.open("POST", "signInProcess.php", true);
     request.send(form);
-}d  
+}
+
+
+//admin-login ani,ations and functions
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('adminPassword');
+
+    /**
+     * Toggles the password field visibility.
+     */
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function () {
+            // Toggle the type attribute of the password input
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle the eye icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // The animations are handled by CSS, so no extra JavaScript is needed for them.
+    // The form submission logic has been removed as requested.
+    
+});
+
+  function loginAdmin() {
+    //alert("Admin login functionality is not implemented yet.");
+
+    var ae = document.getElementById("adminEmail").value;
+    var ap = document.getElementById("adminPassword").value;
+
+    //alert("Admin email: " + ae + ", Admin password: " + ap);
+
+    var form = new FormData();
+    form.append("ae", ae);
+    form.append("ap", ap);
+
+    var request = new XMLHttpRequest();
+    
+    request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+            var text = request.responseText;
+
+            if (text == "success") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: "You have logged in successfully.",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    window.location.href = "admin-dashboard.php"; // Redirect after successful login
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: text,
+                });
+            }
+        }
+    };
+    request.open("POST", "adminLoginProcess.php", true);
+    request.send(form);
+
+  }
