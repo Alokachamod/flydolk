@@ -3,149 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Admin Panel Header - Simple & Clean</title>
+    <title>flydolk - Admin Header</title>
     
     <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
-    <!-- Google Fonts: Inter for a clean, professional look -->
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS for the Simple Theme -->
     <style>
+        /* Shared Styles */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa; /* Light gray background */
+            background-color: #f8f9fa;
         }
 
-        .navbar {
+        /* Header Styles */
+        .admin-header {
             background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,.05);
+            border-bottom: 1px solid #dee2e6;
         }
 
-        .navbar-brand .logo-text {
-            font-weight: 600;
-            color: #212529;
-        }
-        
-        .navbar-brand .logo-icon {
-            color: var(--bs-primary);
+        .navbar-brand {
+            font-weight: 700;
+            color: #343a40;
         }
 
-        .navbar-nav .nav-link {
+        .nav-link {
             font-weight: 500;
-            color: #6c757d; /* Muted gray for non-active links */
-            padding-top: 0.5rem;
+            color: #495057;
             padding-bottom: 0.5rem;
-            border-bottom: 3px solid transparent; /* Placeholder for active state */
+            border-bottom: 2px solid transparent;
             transition: color 0.2s ease-in-out;
         }
-        
-        .navbar-nav .nav-link:hover,
-        .navbar-nav .nav-link:focus {
-            color: #212529; /* Darker on hover */
+
+        .nav-link:hover {
+            color: #0d6efd;
         }
 
-        /* Simple underline for the active navigation link */
-        .navbar-nav .nav-item.active .nav-link {
-            color: var(--bs-primary);
+        /* The active state for the underline */
+        .nav-link.active {
+            color: #0d6efd;
             font-weight: 600;
-            border-bottom: 3px solid var(--bs-primary);
+            border-bottom-color: #0d6efd;
         }
         
-        /* Dropdown menu styling */
-        .dropdown-menu {
-            border-radius: 0.5rem;
-            border: 1px solid #dee2e6;
-            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+        .header-icon {
+            font-size: 1.25rem;
         }
-        .dropdown-item {
-            font-weight: 500;
+
+        /* Notification Dropdown Styles */
+        .notification-dropdown {
+            width: 350px;
+            border-radius: 0.75rem;
         }
-        .dropdown-item:active {
-             background-color: var(--bs-primary);
-             color: #fff;
+        .notification-item {
+            border-bottom: 1px solid #e9ecef;
+            white-space: normal; /* Allow text to wrap */
         }
-        
-        .notification-icon {
-            color: #6c757d;
+        .notification-item:last-child {
+            border-bottom: none;
         }
-        .notification-icon:hover {
-            color: #212529;
+         .notification-item .icon {
+            font-size: 1.25rem;
         }
-        
-        .notification-badge {
-            top: 0px;
-            right: -5px;
-            border: 2px solid #ffffff;
+        .notification-item.unread {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Component -->
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light">
+    <!-- Header -->
+    <header class="admin-header sticky-top">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <!-- 1. Logo (Left) -->
-                <a class="navbar-brand d-flex align-items-center" href="#">
-                    <i class="bi bi-fan fs-2 logo-icon me-2"></i> <!-- Simple Propeller Icon -->
-                    <span class="logo-text">DroneAdmin</span>
-                </a>
+                <!-- Logo -->
+                <a class="navbar-brand" href="dashboard.html">flydolk</a>
 
-                <!-- Mobile Menu Button (Hamburger) -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+                <!-- Responsive Toggle Button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Collapsible Wrapper -->
-                <div class="collapse navbar-collapse" id="main-nav">
-                    <!-- 2. Navigation Links (Center) -->
-                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gy-2 text-center">
-                        <li class="nav-item active mx-lg-2"><a class="nav-link" href="#">Dashboard</a></li>
-                        <li class="nav-item mx-lg-2"><a class="nav-link" href="#">Products</a></li>
-                        <li class="nav-item mx-lg-2"><a class="nav-link" href="#">Orders</a></li>
-                        <li class="nav-item mx-lg-2"><a class="nav-link" href="#">Users</a></li>
-                        <!-- Management Dropdown -->
-                        <li class="nav-item dropdown mx-lg-2">
-                            <a class="nav-link dropdown-toggle" href="#" id="managementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <!-- Collapsible Navigation Links -->
+                <div class="collapse navbar-collapse" id="adminNavbar">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="products.html">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="orders.html">Orders</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="users.html">Users</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Management
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="managementDropdown">
-                                <li><a class="dropdown-item" href="#">Category Management</a></li>
-                                <li><a class="dropdown-item" href="#">Color Management</a></li>
-                                <li><a class="dropdown-item" href="#">Brand Management</a></li>
-                                <li><a class="dropdown-item" href="#">Model Management</a></li>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="management.html">Product Attributes</a></li>
+                                <li><a class="dropdown-item" href="admin-management.html">Admin Panel</a></li>
                             </ul>
                         </li>
                     </ul>
+                </div>
+                
+                <!-- Right Side Icons -->
+                <div class="d-flex align-items-center gap-3">
+                    <a href="#" class="nav-link"><i class="bi bi-chat-dots header-icon"></i></a>
+                    
+                    <!-- Notification Dropdown -->
+                    <div class="dropdown">
+                         <a href="#" class="nav-link dropdown-toggle" id="notificationDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell header-icon"></i>
+                         </a>
+                         <ul class="dropdown-menu dropdown-menu-end p-2 notification-dropdown" aria-labelledby="notificationDropdownLink">
+                             <li class="px-2 py-1">
+                                 <h6 class="fw-bold mb-0">Notifications</h6>
+                             </li>
+                             <li><hr class="dropdown-divider"></li>
+                             
+                             <!-- Notification Item -->
+                             <li class="notification-item p-2 d-flex align-items-start unread">
+                                <div class="icon text-success me-3 pt-1"><i class="bi bi-box-seam-fill"></i></div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-1"><strong>New Order:</strong> #ORD-00452 has been placed by John Doe.</p>
+                                    <small class="text-muted">15 minutes ago</small>
+                                </div>
+                            </li>
 
-                    <!-- 3. Icons (Right) -->
-                    <div class="d-flex align-items-center justify-content-center mt-3 mt-lg-0">
-                        <!-- Message Icon -->
-                        <a href="#" class="notification-icon me-4">
-                            <i class="bi bi-envelope fs-5"></i>
-                        </a>
-                        
-                        <!-- Notification Icon with Badge -->
-                        <a href="#" class="position-relative notification-icon">
-                            <i class="bi bi-bell fs-5"></i>
-                            <span class="position-absolute notification-badge translate-middle p-1 bg-danger border border-light rounded-circle">
-                                <span class="visually-hidden">New alerts</span>
-                            </span>
-                        </a>
+                            <!-- Notification Item -->
+                            <li class="notification-item p-2 d-flex align-items-start unread">
+                                <div class="icon text-warning me-3 pt-1"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-1"><strong>Low Stock Alert:</strong> "DJI Mavic 3 Propellers" has only 5 items left.</p>
+                                    <small class="text-muted">1 hour ago</small>
+                                </div>
+                            </li>
+
+                             <!-- Notification Item -->
+                            <li class="notification-item p-2 d-flex align-items-start">
+                                <div class="icon text-primary me-3 pt-1"><i class="bi bi-person-plus-fill"></i></div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-1"><strong>New User:</strong> Jane Smith has registered an account.</p>
+                                    <small class="text-muted">3 hours ago</small>
+                                </div>
+                            </li>
+                            
+                             <li><hr class="dropdown-divider"></li>
+                             <li><a class="dropdown-item text-center text-primary" href="notifications.html">View All Notifications</a></li>
+                         </ul>
                     </div>
                 </div>
+
             </div>
         </nav>
     </header>
 
     <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript for Header Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const currentPage = 'dashboard.html';
+            const managementPages = ['management.html', 'admin-management.html'];
+            
+            const mainNavLinks = document.querySelectorAll('#adminNavbar .nav-link');
+            const managementDropdownToggle = document.querySelector('#adminNavbar .dropdown-toggle');
+
+            mainNavLinks.forEach(link => {
+                // Check if it's not a dropdown toggle
+                if (!link.classList.contains('dropdown-toggle')) {
+                    const linkPage = link.getAttribute('href');
+                    if (linkPage === currentPage) {
+                        link.classList.add('active');
+                    }
+                }
+            });
+
+            // Special handling for the management dropdown
+            if (managementPages.includes(currentPage)) {
+                managementDropdownToggle.classList.add('active');
+            }
+        });
+    </script>
 </body>
 </html>
