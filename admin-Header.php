@@ -96,24 +96,24 @@
                 <div class="collapse navbar-collapse" id="adminNavbar">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-3">
                         <li class="nav-item">
-                            <a class="nav-link" href="dashboard.html">Dashboard</a>
+                            <a class="nav-link" href="admin-dashboard.php">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="products.html">Products</a>
+                            <a class="nav-link" href="admin-productManagement.php">Products</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="orders.html">Orders</a>
+                            <a class="nav-link" href="admin-orderManagement.php">Orders</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="users.html">Users</a>
+                            <a class="nav-link" href="admin-userManagement.php">Users</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Management
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="management.html">Product Attributes</a></li>
-                                <li><a class="dropdown-item" href="admin-management.html">Admin Panel</a></li>
+                                <li><a class="dropdown-item" href="admin-subManagement.php">Product Attributes</a></li>
+                                <li><a class="dropdown-item" href="admin-panelManagement.php">Admin Panel</a></li>
                             </ul>
                         </li>
                     </ul>
