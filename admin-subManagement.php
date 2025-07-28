@@ -1,3 +1,14 @@
+<?php
+    // Start the session on every page
+    session_start();
+
+    // Check if the admin is logged in. If not, kick them back to the login page.
+    if (!isset($_SESSION['admin_id'])) {
+        header("Location: admin-login.php");
+        exit(); // Stop the script from running
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
