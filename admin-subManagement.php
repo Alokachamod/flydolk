@@ -7,6 +7,9 @@ if (!isset($_SESSION['admin_id'])) {
     header("Location: admin-login.php");
     exit(); // Stop the script from running
 }
+
+// Include the database connection file
+include 'connection.php';
 ?>
 
 <!DOCTYPE html>
@@ -116,28 +119,34 @@ if (!isset($_SESSION['admin_id'])) {
                     <!-- Categories Pane -->
                     <div class="tab-pane fade show active" id="categories-tab-pane" role="tabpanel">
                         <div class="d-flex justify-content-end mb-3">
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="bi bi-plus-circle me-1"></i> Add Category</button>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="addCategory();"><i class="bi bi-plus-circle me-1"></i> Add Category</button>
                         </div>
+                        <?php
+                            //seach for categories in the database
+                            $rs = Database::search("SELECT*From `category`");
+                        ?>
                         <table class="table table-hover">
                             <thead class="table-light">
                                 <tr>
                                     <th>Category Name</th>
-                                    <th>Products</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php
+                            // 4. Loop through the database results
+                            // ffetch_assoc() gets one row at a time
+                            while ($row = $product_result->fetch_assoc()) {
+                            ?>
                                 <tr>
-                                    <td>Professional</td>
-                                    <td>67</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
+                                    <td id=""><?php echo $row['name']; ?></td>
+                                    <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCategory();"><i class="bi bi-trash"></i></button></td>
                                 </tr>
-                                <tr>
-                                    <td>Hobbyist</td>
-                                    <td>82</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
-                                </tr>
+                                
                             </tbody>
+                            <?php
+                            }
+                            ?>
                         </table>
                     </div>
 
@@ -191,7 +200,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 <tr>
                                     <td><span class="color-swatch" style="background-color: #ced4da;"></span></td>
                                     <td>Alpine White</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1" data-bs-target=""><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -250,6 +259,8 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
         </div>
     </div>
+
+    
     <!-- Brand Modal -->
     <div class="modal fade" id="brandModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -264,6 +275,7 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
         </div>
     </div>
+    
     <!-- Color Modal -->
     <div class="modal fade" id="colorModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
