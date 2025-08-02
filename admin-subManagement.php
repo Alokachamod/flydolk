@@ -11,7 +11,6 @@ if (!isset($_SESSION['admin_id'])) {
 // Include the database connection file
 include 'connection.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -119,11 +118,11 @@ include 'connection.php';
                     <!-- Categories Pane -->
                     <div class="tab-pane fade show active" id="categories-tab-pane" role="tabpanel">
                         <div class="d-flex justify-content-end mb-3">
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="addCategory();"><i class="bi bi-plus-circle me-1"></i> Add Category</button>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" ><i class="bi bi-plus-circle me-1"></i> Add Category</button>
                         </div>
                         <?php
                             //seach for categories in the database
-                            $rs = Database::search("SELECT*From `category`");
+                            //$rs = Database::search("SELECT*From `category`");
                         ?>
                         <table class="table table-hover">
                             <thead class="table-light">
@@ -135,17 +134,17 @@ include 'connection.php';
                             <tbody>
                                 <?php
                             // 4. Loop through the database results
-                            // ffetch_assoc() gets one row at a time
-                            while ($row = $product_result->fetch_assoc()) {
+                            // fetch_assoc() gets one row at a time
+                            //while ($row = $product_result->fetch_assoc()) {
                             ?>
                                 <tr>
-                                    <td id=""><?php echo $row['name']; ?></td>
+                                    <td id="cname"><?php //echo $row['name']; ?></td>
                                     <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCategory();"><i class="bi bi-trash"></i></button></td>
                                 </tr>
                                 
                             </tbody>
                             <?php
-                            }
+                            //}
                             ?>
                         </table>
                     </div>
@@ -244,8 +243,7 @@ include 'connection.php';
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <
-                        h5 class="modal-title fw-bold">Add/Edit Category</h5>
+                    <h5 class="modal-title fw-bold">Add/Edit Category</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -253,7 +251,7 @@ include 'connection.php';
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                 
-                <button type="button" class="btn btn-primary" onclick="addCategory();">Save</button>
+                <button type="button" class="btn btn-primary" onclick="addCategory();"> Save </button>
 
             </div>
             </div>
@@ -312,6 +310,8 @@ include 'connection.php';
 
     <!-- Footer -->
     <footer><?php include 'admin-footer.php'; ?></footer>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

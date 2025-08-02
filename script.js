@@ -163,3 +163,43 @@ document.addEventListener('DOMContentLoaded', function () {
     request.send(form);
 
   }
+
+
+  //add category process
+
+  function addCategory() {
+            //alert("Add category functionality is not implemented yet.");
+
+            var cname = document.getElementById("category").value;
+            
+            //alert("Category name: " + cname);
+
+            var form = new FormData();
+            form.append("c", cname);
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (request.readyState == 4 && request.status == 200) {
+                    var text = request.responseText;
+
+                    if (text == "success") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success!",
+                            text: "Category added successfully.",
+                            confirmButtonText: "OK",
+                        }).then(() => {
+                            window.location.reload(); // Reload the page to see the new category
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text: text,
+                        });
+                    }
+                }
+            };
+            request.open("POST", "addCategory.php", true);
+            request.send(form);
+            
+        }
