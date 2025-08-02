@@ -202,4 +202,64 @@ document.addEventListener('DOMContentLoaded', function () {
             request.open("POST", "addCategory.php", true);
             request.send(form);
             
+
         }
+
+
+
+//delete category process
+
+/**
+ * Asks for confirmation and deletes a category using SweetAlert2.
+ * @param {number} categoryId - The ID of the category to delete.
+ * @param {string} categoryName - The name of the category for the confirmation dialog.
+ */
+function deleteCategory(categoryId, categoryName) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert the deletion of '" + categoryName + "'!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        // This code runs if the user clicks "Yes, delete it!"
+        if (result.isConfirmed) {
+            
+            // Prepare the data to send (only the ID is needed)
+            var form = new FormData();
+            form.append("categoryId", categoryId); 
+
+            // Create and send the AJAX request
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (request.readyState == 4 && request.status == 200) {
+                    var text = request.responseText;
+
+                    if (text.includes("success")) {
+                        // Show success message and reload
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: "The category has been deleted.",
+                            icon: "success"
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        // Show error message from the server
+                        Swal.fire({
+                            title: "Error!",
+                            text: text,
+                            icon: "error"
+                        });
+                    }
+                }
+            };
+            request.open("POST", "deleteCategory.php", true);
+            request.send(form);
+        }
+    });
+}
+
+

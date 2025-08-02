@@ -118,34 +118,36 @@ include 'connection.php';
                     <!-- Categories Pane -->
                     <div class="tab-pane fade show active" id="categories-tab-pane" role="tabpanel">
                         <div class="d-flex justify-content-end mb-3">
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" ><i class="bi bi-plus-circle me-1"></i> Add Category</button>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="bi bi-plus-circle me-1"></i> Add Category</button>
                         </div>
                         <?php
-                            //seach for categories in the database
-                            //$rs = Database::search("SELECT*From `category`");
+                        //seach for categories in the database
+                        $rs = Database::search("SELECT*From `category`");
                         ?>
-                        <table class="table table-hover">
+                        <table class="table table-hover align-middle col-6 col-md-10">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Category Name</th>
-                                    <th class="text-end">Actions</th>
+                                    <th class="col-11">Category Name</th>
+                                    <th class="text-end col-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                            // 4. Loop through the database results
-                            // fetch_assoc() gets one row at a time
-                            //while ($row = $product_result->fetch_assoc()) {
-                            ?>
-                                <tr>
-                                    <td id="cname"><?php //echo $row['name']; ?></td>
-                                    <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCategory();"><i class="bi bi-trash"></i></button></td>
-                                </tr>
-                                
+                                // 4. Loop through the database results
+                                // fetch_assoc() gets one row at a time
+                                while ($row = $rs->fetch_assoc()) {
+                                ?>
+                                    <tr>
+                                        <td ><?php echo $row['name']; ?></td>
+                                        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')">
+                                                <i class="bi bi-trash"></i>
+                                            </button></td>
+                                    </tr>
+
                             </tbody>
-                            <?php
-                            //}
-                            ?>
+                        <?php
+                                }
+                        ?>
                         </table>
                     </div>
 
@@ -244,21 +246,21 @@ include 'connection.php';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">Add/Edit Category</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3"><label class="form-label">Category Name</label><input type="text" class="form-control" id="category"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                
-                <button type="button" class="btn btn-primary" onclick="addCategory();"> Save </button>
 
-            </div>
+                    <button type="button" class="btn btn-primary" onclick="addCategory();"> Save </button>
+
+                </div>
             </div>
         </div>
     </div>
 
-    
+
     <!-- Brand Modal -->
     <div class="modal fade" id="brandModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -273,7 +275,7 @@ include 'connection.php';
             </div>
         </div>
     </div>
-    
+
     <!-- Color Modal -->
     <div class="modal fade" id="colorModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
