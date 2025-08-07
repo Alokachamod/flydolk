@@ -262,4 +262,99 @@ function deleteCategory(categoryId, categoryName) {
     });
 }
 
+//add brand process
+
+function addBrand() {
+    //alert("Add brand functionality is not implemented yet.");
+
+    var bname = document.getElementById("bname").value; 
+
+    //alert("Brand name: " + bname);
+
+    var Form = new FormData();
+    Form.append("b", bname);
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+            var text = request.responseText;
+
+            if (text == "success") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: "Brand added successfully.",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    window.location.reload(); // Reload the page to see the new brand
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: text,
+                });
+            }
+        }
+    };
+    request.open("POST", "addBrand.php", true);
+    request.send(Form);
+
+}
+
+/**
+ * Asks for confirmation and deletes a Brand using SweetAlert2.
+ * @param {number} brandId - The ID of the brand to delete.
+ * @param {string} brandName - The name of the brand for the confirmation dialog.
+ */
+function deleteBrand(brandId, brandName) { // <-- FIX 1: Renamed from deletebrand to deleteBrand
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert the deletion of '" + brandName + "'!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        // This code runs if the user clicks "Yes, delete it!"
+        if (result.isConfirmed) {
+            
+            // Prepare the data to send (only the ID is needed)
+            var form = new FormData();
+            form.append("brandId", brandId); 
+
+            // Create and send the AJAX request
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (request.readyState == 4 && request.status == 200) {
+                    var text = request.responseText;
+
+                    if (text.includes("success")) {
+                        // Show success message and reload
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: "The brand has been deleted.",
+                            icon: "success"
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        // Show error message from the server
+                        Swal.fire({
+                            title: "Error!",
+                            text: text,
+                            icon: "error"
+                        });
+                    }
+                }
+            };
+            request.open("POST", "deleteBrand.php", true);
+            request.send(form);
+
+            // echo("success"); // <-- FIX 2: Removed invalid PHP code
+        }
+    });
+}
+
+
 

@@ -21,6 +21,7 @@ include 'connection.php';
 
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="bootstrap.css">
 
     <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -36,16 +37,27 @@ include 'connection.php';
     <style>
         /* Page Styles */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa;
+        /* --- ADD THESE LINES --- */
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        /* ----------------------- */
+    }
 
-        .page-card {
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
-        }
+    /* --- ADD THIS RULE --- */
+    main {
+        flex-grow: 1;
+    }
+    /* ----------------------- */
+
+    .page-card {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    }
 
         .table-hover tbody tr:hover {
             background-color: #f8f9fa;
@@ -138,7 +150,7 @@ include 'connection.php';
                                 while ($row = $rs->fetch_assoc()) {
                                 ?>
                                     <tr>
-                                        <td ><?php echo $row['name']; ?></td>
+                                        <td><?php echo $row['name']; ?></td>
                                         <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')">
                                                 <i class="bi bi-trash"></i>
                                             </button></td>
@@ -156,30 +168,39 @@ include 'connection.php';
                         <div class="d-flex justify-content-end mb-3">
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#brandModal"><i class="bi bi-plus-circle me-1"></i> Add Brand</button>
                         </div>
+
+                        <?php
+                        //search brands in the database
+                        $rs = Database::search("SELECT * FROM `brand`");
+                        ?>
                         <table class="table table-hover">
                             <thead class="table-light">
                                 <tr>
                                     <th>Brand Name</th>
-                                    <th>Products</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
+                            <?php
+                            while ($row = $rs->fetch_assoc()) {
+                            ?>
                             <tbody>
                                 <tr>
-                                    <td>DJI</td>
-                                    <td>115</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
+                                    <td><?php echo $row['name']; ?></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteBrand(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
                                 </tr>
-                                <tr>
-                                    <td>Autel</td>
-                                    <td>45</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
-                                </tr>
+
                             </tbody>
+                            <?php
+                            }
+                            ?>
                         </table>
                     </div>
 
                     <!-- Colors Pane -->
+
+                    <?php 
+                     $rs = Database::search("SELECT * FROM `color`");
+                    ?>
                     <div class="tab-pane fade" id="colors-tab-pane" role="tabpanel">
                         <div class="d-flex justify-content-end mb-3">
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#colorModal"><i class="bi bi-plus-circle me-1"></i> Add Color</button>
@@ -192,18 +213,20 @@ include 'connection.php';
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
+                            <?php
+                            while ($row = $rs->fetch_assoc()) {
+                            ?>
                             <tbody>
                                 <tr>
-                                    <td><span class="color-swatch" style="background-color: #212529;"></span></td>
-                                    <td>Carbon Black</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
+                                    <td><span class="color-swatch" style="background-color: <?php echo $row['color_code']; ?>;" id="ccode"></span></td>
+                                    <td ><?php echo $row['name']; ?></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
                                 </tr>
-                                <tr>
-                                    <td><span class="color-swatch" style="background-color: #ced4da;"></span></td>
-                                    <td>Alpine White</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1" data-bs-target=""><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
-                                </tr>
+                               
                             </tbody>
+                            <?php
+                            }
+                            ?>
                         </table>
                     </div>
 
@@ -269,9 +292,12 @@ include 'connection.php';
                     <h5 class="modal-title fw-bold">Add/Edit Brand</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Brand Name</label><input type="text" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Brand Name</label><input type="text" class="form-control" id="bname"></div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary">Save</button></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addBrand();">Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -284,10 +310,10 @@ include 'connection.php';
                     <h5 class="modal-title fw-bold">Add/Edit Color</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Color Name</label><input type="text" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Color Code</label><input type="color" class="form-control form-control-color w-100"></div>
+                    <div class="mb-3"><label class="form-label">Color Name</label><input type="text" class="form-control" id="cname" id="cname"></div>
+                    <div class="mb-3"><label class="form-label">Color Code</label><input type="color" class="form-control form-control-color w-100" id="ccode"></div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary">Save</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" onclick="addColor();">Save</button></div>
             </div>
         </div>
     </div>
@@ -299,7 +325,7 @@ include 'connection.php';
                     <h5 class="modal-title fw-bold">Add/Edit Model</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Model Name</label><input type="text" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Model Name</label><input type="text" class="form-control" id=""></div>
                     <div class="mb-3"><label class="form-label">Brand</label><select class="form-select">
                             <option>DJI</option>
                             <option>Autel</option>
