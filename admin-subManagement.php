@@ -220,7 +220,7 @@ include 'connection.php';
                                 <tr>
                                     <td><span class="color-swatch" style="background-color: <?php echo $row['color_code']; ?>;" id="ccode"></span></td>
                                     <td ><?php echo $row['name']; ?></td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteColor(<?php echo $row['color_code']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
                                 </tr>
                                
                             </tbody>
