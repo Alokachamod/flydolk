@@ -350,7 +350,6 @@ function deleteBrand(brandId, brandName) { // <-- FIX 1: Renamed from deletebran
             };
             request.open("POST", "deleteBrand.php", true);
             request.send(form);
-
             // echo("success"); // <-- FIX 2: Removed invalid PHP code
         }
     });
@@ -359,13 +358,11 @@ function deleteBrand(brandId, brandName) { // <-- FIX 1: Renamed from deletebran
 function addColor(){
 
     var cname = document.getElementById("cname").value;
-    var ccode = document.getElementById("ccode").value;
 
     //alert("Color name: " + cname + ", Color code: " + ccode);
 
     var form = new FormData();
     form.append("cname", cname);
-    form.append("ccode", ccode);
 
     var request = new XMLHttpRequest();
     request.onreadystatechange = function () {
@@ -396,10 +393,10 @@ function addColor(){
 }
 
 /** * Asks for confirmation and deletes a color using SweetAlert2.
- * @param {string} colorCode - The code of the color to delete.
+ * @param {string} colorId - The code of the color to delete.
  * @param {string} colorName - The name of the color for the confirmation dialog.
  */ 
-function deleteColor(colorCode, colorName) {
+function deleteColor(colorId, colorName) {
     Swal.fire({
         title: "Are you sure?",
         text: "You won't be able to revert the deletion of '" + colorName + "'!",
@@ -411,7 +408,7 @@ function deleteColor(colorCode, colorName) {
     }).then((result) => {
         if (result.isConfirmed) {
             var form = new FormData();
-            form.append("colorCode", colorCode); 
+            form.append("colorId", colorId); 
 
             var request = new XMLHttpRequest();
             request.onreadystatechange = function () {
@@ -441,4 +438,87 @@ function deleteColor(colorCode, colorName) {
     });
 }
 
+function addModel(){
+    var mname = document.getElementById("mname").value;
+
+    var form = new FormData();
+    form.append("mname", mname);
+    
+    
+
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+            var text = request.responseText;
+
+            if (text == "success") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: "Model added successfully.",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    window.location.reload(); // Reload the page to see the new model
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: text,
+                });
+            }
+        }
+    };
+    request.open("POST", "addModel.php", true);
+    request.send(form);
+}
+
+
+
+/**
+ * Asks for confirmation and deletes a model using SweetAlert2.
+ * @param {number} modelId - The ID of the model to delete.
+ * @param {string} modelName - The name of the model for the confirmation dialog.
+ */
+function deleteModel(modelId, modelName) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert the deletion of '" + modelName + "'!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var form = new FormData();
+            form.append("modelId", modelId);
+
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (request.readyState == 4 && request.status == 200) {
+                    var text = request.responseText;
+
+                    if (text.includes("success")) {
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: "The model has been deleted.",
+                            icon: "success"
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error!",
+                            text: text,
+                            icon: "error"
+                        });
+                    }
+                }
+            };
+            request.open("POST", "deleteModel.php", true);
+            request.send(form);
+        }
+    });
+}
 

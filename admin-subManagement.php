@@ -37,27 +37,28 @@ include 'connection.php';
     <style>
         /* Page Styles */
         body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f8f9fa;
-        /* --- ADD THESE LINES --- */
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            /* --- ADD THESE LINES --- */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* ----------------------- */
+        }
+
+        /* --- ADD THIS RULE --- */
+        main {
+            flex-grow: 1;
+        }
+
         /* ----------------------- */
-    }
 
-    /* --- ADD THIS RULE --- */
-    main {
-        flex-grow: 1;
-    }
-    /* ----------------------- */
-
-    .page-card {
-        background-color: #ffffff;
-        border: 1px solid #dee2e6;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
-    }
+        .page-card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+        }
 
         .table-hover tbody tr:hover {
             background-color: #f8f9fa;
@@ -89,6 +90,11 @@ include 'connection.php';
             border: 1px solid #dee2e6;
             display: inline-block;
             vertical-align: middle;
+        }
+
+        .input-group .form-control-color {
+            min-width: 50px;
+            /* Adjust as needed */
         }
     </style>
 </head>
@@ -183,13 +189,13 @@ include 'connection.php';
                             <?php
                             while ($row = $rs->fetch_assoc()) {
                             ?>
-                            <tbody>
-                                <tr>
-                                    <td><?php echo $row['name']; ?></td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteBrand(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
-                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <td><?php echo $row['name']; ?></td>
+                                        <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteBrand(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
+                                    </tr>
 
-                            </tbody>
+                                </tbody>
                             <?php
                             }
                             ?>
@@ -198,8 +204,8 @@ include 'connection.php';
 
                     <!-- Colors Pane -->
 
-                    <?php 
-                     $rs = Database::search("SELECT * FROM `color`");
+                    <?php
+                    $rs = Database::search("SELECT * FROM `color`");
                     ?>
                     <div class="tab-pane fade" id="colors-tab-pane" role="tabpanel">
                         <div class="d-flex justify-content-end mb-3">
@@ -208,7 +214,6 @@ include 'connection.php';
                         <table class="table table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Color</th>
                                     <th>Name</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
@@ -216,14 +221,13 @@ include 'connection.php';
                             <?php
                             while ($row = $rs->fetch_assoc()) {
                             ?>
-                            <tbody>
-                                <tr>
-                                    <td><span class="color-swatch" style="background-color: <?php echo $row['color_code']; ?>;" id="ccode"></span></td>
-                                    <td ><?php echo $row['name']; ?></td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteColor(<?php echo $row['color_code']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
-                                </tr>
-                               
-                            </tbody>
+                                <tbody>
+                                    <tr>
+                                        <td><?php echo $row['name']; ?></td>
+                                        <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteColor('<?php echo $row['id']; ?>', '<?php echo addslashes($row['name']); ?> ' )"><i class="bi bi-trash"></i></button></td>
+                                    </tr>
+
+                                </tbody>
                             <?php
                             }
                             ?>
@@ -231,6 +235,11 @@ include 'connection.php';
                     </div>
 
                     <!-- Models Pane -->
+
+                    <?php
+                    $rs = Database::search("SELECT * FROM `model`");
+
+                    ?>
                     <div class="tab-pane fade" id="models-tab-pane" role="tabpanel">
                         <div class="d-flex justify-content-end mb-3">
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modelModal"><i class="bi bi-plus-circle me-1"></i> Add Model</button>
@@ -239,22 +248,22 @@ include 'connection.php';
                             <thead class="table-light">
                                 <tr>
                                     <th>Model Name</th>
-                                    <th>Brand</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Mavic 3 Pro</td>
-                                    <td>DJI</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>EVO II</td>
-                                    <td>Autel</td>
-                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
-                                </tr>
-                            </tbody>
+                            <?php
+                            while ($row = $rs->fetch_assoc()) {
+                            ?>
+                                <tbody>
+                                    <tr>
+                                        <td><?php echo $row['name']; ?></td>
+                                        <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteModel(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
+                                    </tr>
+
+                                </tbody>
+                            <?php
+                            }
+                            ?>
                         </table>
                     </div>
                 </div>
@@ -311,13 +320,16 @@ include 'connection.php';
                 </div>
                 <div class="modal-body">
                     <div class="mb-3"><label class="form-label">Color Name</label><input type="text" class="form-control" id="cname" id="cname"></div>
-                    <div class="mb-3"><label class="form-label">Color Code</label><input type="color" class="form-control form-control-color w-100" id="ccode"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" onclick="addColor();">Save</button></div>
             </div>
         </div>
     </div>
     <!-- Model Modal -->
+    <?php
+    $rs = Database::search("SELECT * FROM `brand`");
+
+    ?>
     <div class="modal fade" id="modelModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -325,13 +337,10 @@ include 'connection.php';
                     <h5 class="modal-title fw-bold">Add/Edit Model</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Model Name</label><input type="text" class="form-control" id=""></div>
-                    <div class="mb-3"><label class="form-label">Brand</label><select class="form-select">
-                            <option>DJI</option>
-                            <option>Autel</option>
-                        </select></div>
+                    <div class="mb-3"><label class="form-label">Model Name</label><input type="text" class="form-control" id="mname"></div>
+
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary">Save</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" onclick="addModel();">Save</button></div>
             </div>
         </div>
     </div>
@@ -340,6 +349,8 @@ include 'connection.php';
     <footer><?php include 'admin-footer.php'; ?></footer>
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

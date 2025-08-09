@@ -3,13 +3,12 @@ include 'connection.php';
 
 
 $cname = $_POST['cname'];
-$ccode = $_POST['ccode'];
 
 //echo $cname . " " . $ccode;
 
-$rs = Database::search("SELECT * FROM `color` WHERE `name` = '" . $cname . "' OR `color_code` = '" . $ccode . "'");
+$rs = Database::search("SELECT * FROM `color` WHERE `name` = '" . $cname . "'");
 if ($rs->num_rows == 0) {
-    Database::iud("INSERT INTO `color`(`name`, `color_code`) VALUES ('" . $cname . "','" . $ccode . "')");
+    Database::iud("INSERT INTO `color`(`name`) VALUES ('" . $cname . "')");
     echo ("success");
 } else {
     echo ("duplicate");
