@@ -203,10 +203,7 @@
                                         <label for="productName" class="form-label">Product Name</label>
                                         <input type="text" class="form-control" id="productName" placeholder="e.g., DJI Mavic 3 Pro">
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="productSKU" class="form-label">SKU</label>
-                                        <input type="text" class="form-control" id="productSKU" placeholder="e.g., DJI-M3P-001">
-                                    </div>
+                                    
                                     <div>
                                         <label for="productDescription" class="form-label">Description</label>
                                         <textarea class="form-control" id="productDescription" rows="6" placeholder="Provide a detailed description..."></textarea>
@@ -248,7 +245,7 @@
                                         <select class="form-select" id="productBrand"><option selected>Select...</option><option value="1">DJI</option><option value="2">Autel</option></select>
                                     </div>
                                     <div>
-                                        <label for="productModel" class="form-label">Model</label>
+                                        <label for="productModel" class="form-label">Color</label>
                                         <select class="form-select" id="productModel"><option selected>Select...</option><option value="1">Mavic Series</option><option value="2">EVO Series</option></select>
                                     </div>
                                 </div>

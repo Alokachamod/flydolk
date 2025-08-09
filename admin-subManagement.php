@@ -123,9 +123,9 @@ include 'connection.php';
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="colors-tab" data-bs-toggle="tab" data-bs-target="#colors-tab-pane" type="button" role="tab">Colors</button>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <!-- <li class="nav-item" role="presentation">
                         <button class="nav-link" id="models-tab" data-bs-toggle="tab" data-bs-target="#models-tab-pane" type="button" role="tab">Models</button>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
 
@@ -236,8 +236,8 @@ include 'connection.php';
 
                     <!-- Models Pane -->
 
-                    <?php
-                    $rs = Database::search("SELECT * FROM `model`");
+                    <!-- <?php
+                    // $rs = Database::search("SELECT * FROM `model`");
 
                     ?>
                     <div class="tab-pane fade" id="models-tab-pane" role="tabpanel">
@@ -252,20 +252,20 @@ include 'connection.php';
                                 </tr>
                             </thead>
                             <?php
-                            while ($row = $rs->fetch_assoc()) {
+                            //while ($row = $rs->fetch_assoc()) {
                             ?>
                                 <tbody>
                                     <tr>
-                                        <td><?php echo $row['name']; ?></td>
+                                        <td>//<?php echo $row['name']; ?></td>
                                         <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteModel(<?php echo $row['id']; ?>, '<?php echo addslashes($row['name']); ?>')"><i class="bi bi-trash"></i></button></td>
                                     </tr>
 
                                 </tbody>
                             <?php
-                            }
+                            //}
                             ?>
                         </table>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -326,8 +326,8 @@ include 'connection.php';
         </div>
     </div>
     <!-- Model Modal -->
-    <?php
-    $rs = Database::search("SELECT * FROM `brand`");
+    <!-- <?php
+    //$rs = Database::search("SELECT * FROM `brand`");
 
     ?>
     <div class="modal fade" id="modelModal" tabindex="-1">
@@ -343,7 +343,7 @@ include 'connection.php';
                 <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" onclick="addModel();">Save</button></div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Footer -->
     <footer><?php include 'admin-footer.php'; ?></footer>
