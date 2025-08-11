@@ -57,155 +57,147 @@ function signUp() {
 //sign in process
 
 function signin() {
-    var e = document.getElementById("e").value;
-    var p = document.getElementById("p").value;
+  var e = document.getElementById("e").value;
+  var p = document.getElementById("p").value;
 
-    var form = new FormData();
-    // FIX: Append the variables e and p directly, not e.value and p.value
-    form.append("e", e);
-    form.append("p", p);
+  var form = new FormData();
+  // FIX: Append the variables e and p directly, not e.value and p.value
+  form.append("e", e);
+  form.append("p", p);
 
-    var request = new XMLHttpRequest();
+  var request = new XMLHttpRequest();
 
-    request.onreadystatechange = function () {
-        // Check if the request is complete AND successful
-        if (request.readyState == 4 && request.status == 200) {
-            var text = request.responseText;
+  request.onreadystatechange = function () {
+    // Check if the request is complete AND successful
+    if (request.readyState == 4 && request.status == 200) {
+      var text = request.responseText;
 
-            if (text == "success") {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success!",
-                    text: "You have signed in successfully.",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.href = "index.php"; // Redirect after successful sign-in
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: text,
-                });
-            }
-        }
-    };
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have signed in successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.href = "index.php"; // Redirect after successful sign-in
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+    }
+  };
 
-    request.open("POST", "signInProcess.php", true);
-    request.send(form);
+  request.open("POST", "signInProcess.php", true);
+  request.send(form);
 }
-
 
 //admin-login ani,ations and functions
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
+  const togglePassword = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("adminPassword");
 
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('adminPassword');
+  /**
+   * Toggles the password field visibility.
+   */
+  if (togglePassword && passwordInput) {
+    togglePassword.addEventListener("click", function () {
+      // Toggle the type attribute of the password input
+      const type =
+        passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
 
-    /**
-     * Toggles the password field visibility.
-     */
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function () {
-            // Toggle the type attribute of the password input
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle the eye icon
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-    }
-
-    // The animations are handled by CSS, so no extra JavaScript is needed for them.
-    // The form submission logic has been removed as requested.
-    
-});
-
-  function loginAdmin() {
-    //alert("Admin login functionality is not implemented yet.");
-
-    var ae = document.getElementById("adminEmail").value;
-    var ap = document.getElementById("adminPassword").value;
-
-    //alert("Admin email: " + ae + ", Admin password: " + ap);
-
-    var form = new FormData();
-    form.append("ae", ae);
-    form.append("ap", ap);
-
-    var request = new XMLHttpRequest();
-    
-    request.onreadystatechange = function () {
-        if (request.readyState == 4 && request.status == 200) {
-            var text = request.responseText;
-
-            if (text == "success") {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success!",
-                    text: "You have logged in successfully.",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.href = "admin-dashboard.php"; // Redirect after successful login
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: text,
-                });
-            }
-        }
-    };
-    request.open("POST", "adminLoginProcess.php", true);
-    request.send(form);
-
+      // Toggle the eye icon
+      this.classList.toggle("fa-eye");
+      this.classList.toggle("fa-eye-slash");
+    });
   }
 
+  // The animations are handled by CSS, so no extra JavaScript is needed for them.
+  // The form submission logic has been removed as requested.
+});
 
-  //add category process
+function loginAdmin() {
+  //alert("Admin login functionality is not implemented yet.");
 
-  function addCategory() {
-            //alert("Add category functionality is not implemented yet.");
+  var ae = document.getElementById("adminEmail").value;
+  var ap = document.getElementById("adminPassword").value;
 
-            var cname = document.getElementById("category").value;
-            
-            //alert("Category name: " + cname);
+  //alert("Admin email: " + ae + ", Admin password: " + ap);
 
-            var form = new FormData();
-            form.append("c", cname);
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    var text = request.responseText;
+  var form = new FormData();
+  form.append("ae", ae);
+  form.append("ap", ap);
 
-                    if (text == "success") {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Success!",
-                            text: "Category added successfully.",
-                            confirmButtonText: "OK",
-                        }).then(() => {
-                            window.location.reload(); // Reload the page to see the new category
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: text,
-                        });
-                    }
-                }
-            };
-            request.open("POST", "addCategory.php", true);
-            request.send(form);
-            
+  var request = new XMLHttpRequest();
 
-        }
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      var text = request.responseText;
 
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have logged in successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.href = "admin-dashboard.php"; // Redirect after successful login
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+    }
+  };
+  request.open("POST", "adminLoginProcess.php", true);
+  request.send(form);
+}
 
+//add category process
+
+function addCategory() {
+  //alert("Add category functionality is not implemented yet.");
+
+  var cname = document.getElementById("category").value;
+
+  //alert("Category name: " + cname);
+
+  var form = new FormData();
+  form.append("c", cname);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      var text = request.responseText;
+
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Category added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload(); // Reload the page to see the new category
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+    }
+  };
+  request.open("POST", "addCategory.php", true);
+  request.send(form);
+}
 
 //delete category process
 
@@ -215,90 +207,88 @@ document.addEventListener('DOMContentLoaded', function () {
  * @param {string} categoryName - The name of the category for the confirmation dialog.
  */
 function deleteCategory(categoryId, categoryName) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert the deletion of '" + categoryName + "'!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        // This code runs if the user clicks "Yes, delete it!"
-        if (result.isConfirmed) {
-            
-            // Prepare the data to send (only the ID is needed)
-            var form = new FormData();
-            form.append("categoryId", categoryId); 
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert the deletion of '" + categoryName + "'!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    // This code runs if the user clicks "Yes, delete it!"
+    if (result.isConfirmed) {
+      // Prepare the data to send (only the ID is needed)
+      var form = new FormData();
+      form.append("categoryId", categoryId);
 
-            // Create and send the AJAX request
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    var text = request.responseText;
+      // Create and send the AJAX request
+      var request = new XMLHttpRequest();
+      request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+          var text = request.responseText;
 
-                    if (text.includes("success")) {
-                        // Show success message and reload
-                        Swal.fire({
-                            title: "Deleted!",
-                            text: "The category has been deleted.",
-                            icon: "success"
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        // Show error message from the server
-                        Swal.fire({
-                            title: "Error!",
-                            text: text,
-                            icon: "error"
-                        });
-                    }
-                }
-            };
-            request.open("POST", "deleteCategory.php", true);
-            request.send(form);
+          if (text.includes("success")) {
+            // Show success message and reload
+            Swal.fire({
+              title: "Deleted!",
+              text: "The category has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            // Show error message from the server
+            Swal.fire({
+              title: "Error!",
+              text: text,
+              icon: "error",
+            });
+          }
         }
-    });
+      };
+      request.open("POST", "deleteCategory.php", true);
+      request.send(form);
+    }
+  });
 }
 
 //add brand process
 
 function addBrand() {
-    //alert("Add brand functionality is not implemented yet.");
+  //alert("Add brand functionality is not implemented yet.");
 
-    var bname = document.getElementById("bname").value; 
+  var bname = document.getElementById("bname").value;
 
-    //alert("Brand name: " + bname);
+  //alert("Brand name: " + bname);
 
-    var Form = new FormData();
-    Form.append("b", bname);
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4 && request.status == 200) {
-            var text = request.responseText;
+  var Form = new FormData();
+  Form.append("b", bname);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      var text = request.responseText;
 
-            if (text == "success") {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success!",
-                    text: "Brand added successfully.",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.reload(); // Reload the page to see the new brand
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: text,
-                });
-            }
-        }
-    };
-    request.open("POST", "addBrand.php", true);
-    request.send(Form);
-
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Brand added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload(); // Reload the page to see the new brand
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+    }
+  };
+  request.open("POST", "addBrand.php", true);
+  request.send(Form);
 }
 
 /**
@@ -306,174 +296,168 @@ function addBrand() {
  * @param {number} brandId - The ID of the brand to delete.
  * @param {string} brandName - The name of the brand for the confirmation dialog.
  */
-function deleteBrand(brandId, brandName) { // <-- FIX 1: Renamed from deletebrand to deleteBrand
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert the deletion of '" + brandName + "'!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        // This code runs if the user clicks "Yes, delete it!"
-        if (result.isConfirmed) {
-            
-            // Prepare the data to send (only the ID is needed)
-            var form = new FormData();
-            form.append("brandId", brandId); 
+function deleteBrand(brandId, brandName) {
+  // <-- FIX 1: Renamed from deletebrand to deleteBrand
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert the deletion of '" + brandName + "'!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    // This code runs if the user clicks "Yes, delete it!"
+    if (result.isConfirmed) {
+      // Prepare the data to send (only the ID is needed)
+      var form = new FormData();
+      form.append("brandId", brandId);
 
-            // Create and send the AJAX request
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    var text = request.responseText;
+      // Create and send the AJAX request
+      var request = new XMLHttpRequest();
+      request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+          var text = request.responseText;
 
-                    if (text.includes("success")) {
-                        // Show success message and reload
-                        Swal.fire({
-                            title: "Deleted!",
-                            text: "The brand has been deleted.",
-                            icon: "success"
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        // Show error message from the server
-                        Swal.fire({
-                            title: "Error!",
-                            text: text,
-                            icon: "error"
-                        });
-                    }
-                }
-            };
-            request.open("POST", "deleteBrand.php", true);
-            request.send(form);
-            // echo("success"); // <-- FIX 2: Removed invalid PHP code
+          if (text.includes("success")) {
+            // Show success message and reload
+            Swal.fire({
+              title: "Deleted!",
+              text: "The brand has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            // Show error message from the server
+            Swal.fire({
+              title: "Error!",
+              text: text,
+              icon: "error",
+            });
+          }
         }
-    });
+      };
+      request.open("POST", "deleteBrand.php", true);
+      request.send(form);
+      // echo("success"); // <-- FIX 2: Removed invalid PHP code
+    }
+  });
 }
 
-function addColor(){
+function addColor() {
+  var cname = document.getElementById("cname").value;
 
-    var cname = document.getElementById("cname").value;
+  //alert("Color name: " + cname + ", Color code: " + ccode);
 
-    //alert("Color name: " + cname + ", Color code: " + ccode);
+  var form = new FormData();
+  form.append("cname", cname);
 
-    var form = new FormData();
-    form.append("cname", cname);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      var text = request.responseText;
 
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4 && request.status == 200) {
-            var text = request.responseText;
-
-            if (text == "success") {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success!",
-                    text: "Color added successfully.",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.reload(); // Reload the page to see the new color
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: text,
-                });
-            }
-        }
-    };
-    request.open("POST", "addColor.php", true);
-    request.send(form);
-
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Color added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload(); // Reload the page to see the new color
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+    }
+  };
+  request.open("POST", "addColor.php", true);
+  request.send(form);
 }
 
 /** * Asks for confirmation and deletes a color using SweetAlert2.
  * @param {string} colorId - The code of the color to delete.
  * @param {string} colorName - The name of the color for the confirmation dialog.
- */ 
+ */
 function deleteColor(colorId, colorName) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert the deletion of '" + colorName + "'!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            var form = new FormData();
-            form.append("colorId", colorId); 
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert the deletion of '" + colorName + "'!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      var form = new FormData();
+      form.append("colorId", colorId);
 
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    var text = request.responseText;
-
-                    if (text.includes("success")) {
-                        Swal.fire({
-                            title: "Deleted!",
-                            text: "The color has been deleted.",
-                            icon: "success"
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: "Error!",
-                            text: text,
-                            icon: "error"
-                        });
-                    }
-                }
-            };
-            request.open("POST", "deleteColor.php", true);
-            request.send(form);
-        }
-    });
-}
-
-function addModel(){
-    var mname = document.getElementById("mname").value;
-
-    var form = new FormData();
-    form.append("mname", mname);
-    
-    
-
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
+      var request = new XMLHttpRequest();
+      request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {
-            var text = request.responseText;
+          var text = request.responseText;
 
-            if (text == "success") {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success!",
-                    text: "Model added successfully.",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.reload(); // Reload the page to see the new model
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: text,
-                });
-            }
+          if (text.includes("success")) {
+            Swal.fire({
+              title: "Deleted!",
+              text: "The color has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              title: "Error!",
+              text: text,
+              icon: "error",
+            });
+          }
         }
-    };
-    request.open("POST", "addModel.php", true);
-    request.send(form);
+      };
+      request.open("POST", "deleteColor.php", true);
+      request.send(form);
+    }
+  });
 }
 
+function addModel() {
+  var mname = document.getElementById("mname").value;
 
+  var form = new FormData();
+  form.append("mname", mname);
+
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      var text = request.responseText;
+
+      if (text == "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Model added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload(); // Reload the page to see the new model
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: text,
+        });
+      }
+    }
+  };
+  request.open("POST", "addModel.php", true);
+  request.send(form);
+}
 
 /**
  * Asks for confirmation and deletes a model using SweetAlert2.
@@ -481,44 +465,112 @@ function addModel(){
  * @param {string} modelName - The name of the model for the confirmation dialog.
  */
 function deleteModel(modelId, modelName) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert the deletion of '" + modelName + "'!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            var form = new FormData();
-            form.append("modelId", modelId);
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert the deletion of '" + modelName + "'!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      var form = new FormData();
+      form.append("modelId", modelId);
 
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    var text = request.responseText;
+      var request = new XMLHttpRequest();
+      request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+          var text = request.responseText;
 
-                    if (text.includes("success")) {
-                        Swal.fire({
-                            title: "Deleted!",
-                            text: "The model has been deleted.",
-                            icon: "success"
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: "Error!",
-                            text: text,
-                            icon: "error"
-                        });
-                    }
-                }
-            };
-            request.open("POST", "deleteModel.php", true);
-            request.send(form);
+          if (text.includes("success")) {
+            Swal.fire({
+              title: "Deleted!",
+              text: "The model has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              title: "Error!",
+              text: text,
+              icon: "error",
+            });
+          }
         }
-    });
+      };
+      request.open("POST", "deleteModel.php", true);
+      request.send(form);
+    }
+  });
 }
+
+function addProduct() {
+  // Grab fields
+  const name = document.getElementById("pName").value;
+  const desc = document.getElementById("pDesc").value;
+  const price = document.getElementById("pPrice").value;
+  const category = document.getElementById("pCategory").value;
+  const brand = document.getElementById("pBrand").value;
+  const stock = document.getElementById("pStock").value;
+  const status = document.getElementById("pStatus").value;
+  const files = document.getElementById("imgUpload").files;
+
+  // Collect selected color IDs
+  const colorIds = [];
+  document.querySelectorAll(".color-swatch-input:checked").forEach((cb) => {
+    colorIds.push(cb.value);
+  });
+
+
+
+  // Build FormData (no <form> tag required)
+  const fd = new FormData();
+  fd.append("pName", name);
+  fd.append("pDesc", desc);
+  fd.append("pPrice", price);
+  fd.append("pCategory", category);
+  fd.append("pBrand", brand);
+  fd.append("pStock", stock);
+  fd.append("pStatus", status);
+
+  // Colors as array: pColor[]
+  colorIds.forEach((id) => fd.append("pColor[]", id));
+
+  // Images (multiple)
+  for (let i = 0; i < files.length; i++) {
+    fd.append("images[]", files[i]); // PHP: $_FILES['images']
+  }
+
+  // POST to your PHP endpoint (create this file)
+  const xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      const res = xhr.responseText || "";
+      if (xhr.status === 200 && res.trim() === "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Saved",
+          text: "Product created successfully.",
+        }).then(() => {
+          // optional: close modal + refresh
+          const modalEl = document.getElementById("addProductModal");
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          modal && modal.hide();
+          window.location.reload();
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: res || "Server error",
+        });
+      }
+    }
+  };
+  xhr.open("POST", "addProduct.php", true);
+  xhr.send(fd);
+}
+
 
