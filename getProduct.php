@@ -44,8 +44,8 @@ function clean($s)
 
 echo "success"
    ."|".$p['id']
-   ."|".cleanPipe($p['title'])
-   ."|".cleanPipe($p['description'])
+   ."|".$p['title']
+   ."|".$p['description']
    ."|".$p['price']
    ."|".(int)$p['qty']
    ."|".(int)$p['category_id']
