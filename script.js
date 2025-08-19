@@ -574,3 +574,88 @@ function addProduct() {
 }
 
 
+/* -------------------- Open & populate Edit Product modal -------------------- */
+
+function openEditProduct(id){
+  var f = new FormData();
+  f.append("id", id);
+
+  var r = new XMLHttpRequest();
+  r.onreadystatechange = function(){
+    if(r.readyState===4){
+      if(r.status===200){
+        var txt = (r.responseText || "").trim();
+        // expected: success|id|title|desc|price|qty|category_id|brand_id|status_id|colorsCsv
+        if(!txt.startsWith("success|")){
+          Swal.fire({icon:"error", title:"Load failed", text: txt || "Unknown error"}); 
+          
+        
+        var parts = txt.split("|");
+        // parts[0] = success
+        document.getElementById("epId").value        = parts[1] || "";
+        document.getElementById("epName").value      = parts[2] || "";
+        document.getElementById("epDesc").value      = parts[3] || "";
+        document.getElementById("epPrice").value     = parts[4] || "";
+        document.getElementById("epStock").value     = parts[5] || "0";
+        document.getElementById("epCategory").value  = parts[6] || "0";
+        document.getElementById("epBrand").value     = parts[7] || "0";
+        document.getElementById("epStatus").value    = parts[8] || "0";
+
+        // colors
+        var picked = (parts[9] || "").split(",").filter(Boolean);
+        document.querySelectorAll("#epColorGrid .color-swatch-input").forEach(function(cb){
+          cb.checked = picked.indexOf(cb.value) > -1;
+        });
+
+        // show modal
+        new bootstrap.Modal(document.getElementById("editProductModal")).show();
+      }else{
+        Swal.fire({icon:"error", title:"Network error", text:"Please try again."});
+      }
+    }
+    }
+  };
+  r.open("POST","getProduct.php",true);
+  r.send(f);
+}
+
+function updateProductSimple(){
+  var id   = (document.getElementById("epId").value || "").trim();
+  if(!/^\d+$/.test(id)){ Swal.fire({icon:"error", title:"Invalid product id"}); return; }
+
+  var f = new FormData();
+  f.append("id", id);
+  f.append("title", (document.getElementById("epName").value || "").trim());
+  f.append("description", (document.getElementById("epDesc").value || "").trim());
+  f.append("price", (document.getElementById("epPrice").value || "").trim());
+  f.append("qty", document.getElementById("epStock").value);
+  f.append("category_id", document.getElementById("epCategory").value);
+  f.append("brand_id", document.getElementById("epBrand").value);
+  f.append("status_id", document.getElementById("epStatus").value);
+
+  // colors: send as comma list
+  var colors = [];
+  document.querySelectorAll("#epColorGrid .color-swatch-input:checked").forEach(function(cb){
+    colors.push(cb.value);
+  });
+  f.append("colors", colors.join(","));
+
+  var r = new XMLHttpRequest();
+  r.onreadystatechange = function(){
+    if(r.readyState===4){
+      if(r.status===200){
+        var t = (r.responseText || "").trim();
+        if(t==="success"){
+          Swal.fire({icon:"success", title:"Updated!", text:"Product updated successfully."})
+            .then(()=> window.location.reload());
+        }else{
+          Swal.fire({icon:"error", title:"Update failed", text:t || "Unknown error"});
+        }
+      }else{
+        Swal.fire({icon:"error", title:"Network error", text:"Please try again."});
+      }
+    }
+  };
+  r.open("POST","updateProduct.php",true);
+  r.send(f);
+}

@@ -290,33 +290,34 @@ include 'connection.php';
                         ?>
 
                         <tbody id="productTableBody">
-                            <?php while ($r = $rs->fetch_assoc()): ?>
-                                <tr data-id="<?= (int)$r['id'] ?>">
+                            <?php while ($r = $rs->fetch_assoc()) { ?>
+                                <tr data-id="">
                                     <td class="p-3">
                                         <div class="d-flex align-items-center">
-                                            <img src="<?= $r['img'] ?: 'assets/img/placeholder.png' ?>" class="product-image me-3" alt="">
-                                            <span class="fw-bold"><?= htmlspecialchars($r['title']) ?></span>
+                                            <img src="<?php echo $r['img'] ?: 'assets/img/placeholder.png'; ?>" class="product-image me-3" alt="">
+                                            <span class="fw-bold"><?php echo ($r['title']); ?></span>
                                         </div>
                                     </td>
-                                    <td class="p-3"><?= htmlspecialchars($r['category']) ?></td>
-                                    <td class="p-3"><?= htmlspecialchars($r['brand']) ?></td>
-                                    <td class="p-3">LKR <?= number_format((float)$r['price'], 0) ?></td>
+                                    <td class="p-3"><?php echo $r['category']; ?></td>
+                                    <td class="p-3"><?php echo $r['brand']; ?></td>
+                                    <td class="p-3">LKR <?php echo $r['price']; ?></td>
                                     <td class="p-3">
-                                        <?php $in = (int)$r['qty'] > 0; ?>
-                                        <span class="badge <?= $in ? 'bg-success-light text-success-light' : 'bg-danger-light text-danger-light' ?>">
-                                            <?= $in ? "In Stock ({$r['qty']})" : "Out of Stock" ?>
+                                        <?php echo $r['qty']; ?>
+                                        <span class="badge <?php echo $r['qty'] > 0 ? 'bg-success text-success-light' : 'bg-danger text-danger-light' ?>">
+                                            <?= $r['qty'] > 0 ? 'In Stock' : 'Out of Stock' ?>
                                         </span>
                                     </td>
                                     <td class="p-3 text-end">
                                         <button class="btn btn-sm btn-outline-primary"
-                                            onclick="openEditModelModal(<?= (int)$m['id'] ?>, '<?= htmlspecialchars($m['name'], ENT_QUOTES) ?>')">
+                                            onclick="openEditProduct(<?php echo (int)$r['id']; ?>)">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </button>
+
 
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(<?= (int)$r['id'] ?>,'<?= addslashes($r['title']) ?>')"><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>
-                            <?php endwhile; ?>
+                            <?php } ?>
                         </tbody>
                     </table>
                 </div>
@@ -618,30 +619,135 @@ include 'connection.php';
         </div>
     </div>
 
-    <!-- Edit Model Modal -->
-    <div class="modal fade" id="editModelModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Edit Model</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Edit Product Modal (simple) -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title h2 fw-bold" id="editProductModalLabel">Edit Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <input type="hidden" id="epId">
+
+        <div class="row g-4">
+          <!-- Left -->
+          <div class="col-lg-8">
+            <div class="page-card card border-0 mb-4">
+              <div class="card-body p-4">
+                <h5 class="mb-3 fw-bold">Product Information</h5>
+
+                <div class="mb-3">
+                  <label class="form-label" for="epName">Product Name</label>
+                  <input type="text" id="epName" class="form-control" placeholder="Product name">
                 </div>
 
-                <div class="modal-body p-4">
-                    <input type="hidden" id="editModelId">
-                    <div class="mb-3">
-                        <label class="form-label" for="editModelName">Model Name</label>
-                        <input type="text" id="editModelName" class="form-control" placeholder="Enter model name">
-                    </div>
+                <div>
+                  <label class="form-label" for="epDesc">Description</label>
+                  <textarea id="epDesc" rows="6" class="form-control" placeholder="Description"></textarea>
                 </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" onclick="updateModel()">Save changes</button>
-                </div>
+              </div>
             </div>
-        </div>
+          </div>
+
+          <!-- Right -->
+          <div class="col-lg-4">
+            <div class="page-card card border-0 mb-4">
+              <div class="card-body p-4">
+                <h5 class="mb-3 fw-bold">Pricing</h5>
+                <label class="form-label" for="epPrice">Price</label>
+                <div class="input-group">
+                  <span class="input-group-text">LKR</span>
+                  <input type="text" id="epPrice" class="form-control" placeholder="0.00">
+                </div>
+              </div>
+            </div>
+
+            <?php
+              $epCat   = Database::search("SELECT * FROM `category`");
+              $epBrand = Database::search("SELECT * FROM `brand`");
+              $epColor = Database::search("SELECT * FROM `color`");
+              $epStat  = Database::search("SELECT * FROM `product_status`");
+            ?>
+
+            <div class="page-card card border-0 mb-4">
+              <div class="card-body p-4">
+                <h5 class="mb-3 fw-bold">Organization</h5>
+
+                <div class="mb-3">
+                  <label class="form-label" for="epCategory">Category</label>
+                  <select id="epCategory" class="form-select">
+                    <option value="0">Select...</option>
+                    <?php while ($row = $epCat->fetch_assoc()) { ?>
+                      <option value="<?= $row['id']; ?>"><?= htmlspecialchars($row['name']); ?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label" for="epBrand">Brand</label>
+                  <select id="epBrand" class="form-select">
+                    <option value="0">Select...</option>
+                    <?php while ($row = $epBrand->fetch_assoc()) { ?>
+                      <option value="<?= $row['id']; ?>"><?= htmlspecialchars($row['name']); ?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label d-block">Colors</label>
+
+                  <div id="epSelectedColors" class="d-flex flex-wrap gap-2 mb-2"></div>
+
+                  <div id="epColorGrid" class="d-flex flex-wrap gap-3">
+                    <?php while ($row = $epColor->fetch_assoc()) { 
+                      $id=(int)$row['id']; $name=htmlspecialchars($row['name']); ?>
+                      <div class="position-relative">
+                        <input type="checkbox" class="color-swatch-input" id="ep-color-<?= $id ?>"
+                          value="<?= $id ?>" data-name="<?= $name ?>">
+                        <label for="ep-color-<?= $id ?>" class="color-swatch" title="<?= $name ?>"></label>
+                      </div>
+                    <?php } ?>
+                  </div>
+                  <small class="text-muted d-block mt-2">Click to select multiple colors.</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="page-card card border-0">
+              <div class="card-body p-4">
+                <h5 class="mb-3 fw-bold">Stock & Status</h5>
+
+                <div class="mb-3">
+                  <label class="form-label" for="epStock">Stock Quantity</label>
+                  <input type="number" id="epStock" class="form-control" placeholder="0">
+                </div>
+
+                <div>
+                  <label class="form-label" for="epStatus">Status</label>
+                  <select id="epStatus" class="form-select">
+                    <option value="0">Select Status</option>
+                    <?php while ($row = $epStat->fetch_assoc()) { ?>
+                      <option value="<?= $row['id']; ?>"><?= htmlspecialchars($row['name']); ?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /Right -->
+        </div><!-- /row -->
+      </div><!-- /modal-body -->
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="updateProductSimple()">Save changes</button>
+      </div>
     </div>
+  </div>
+</div>
+
 
 
 
