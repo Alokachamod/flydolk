@@ -580,82 +580,172 @@ function openEditProduct(id){
   var f = new FormData();
   f.append("id", id);
 
+  // === PATH: set this to where your PHP file actually is ===
+  // If getProductSimple.php is at /flydolk/getProductSimple.php:
+  var url = "getProduct.php";
+  // If it’s inside /flydolk/admin/ use:
+  // var url = "admin/getProductSimple.php";
+  // Or if it’s in the same folder as this page:
+  // var url = "./getProductSimple.php";
+  // ========================================================
+
   var r = new XMLHttpRequest();
   r.onreadystatechange = function(){
-    if(r.readyState===4){
-      if(r.status===200){
-        var txt = (r.responseText || "").trim();
-        // expected: success|id|title|desc|price|qty|category_id|brand_id|status_id|colorsCsv
-        if(!txt.startsWith("success|")){
-          Swal.fire({icon:"error", title:"Load failed", text: txt || "Unknown error"}); 
-          
-        
-        var parts = txt.split("|");
-        // parts[0] = success
-        document.getElementById("epId").value        = parts[1] || "";
-        document.getElementById("epName").value      = parts[2] || "";
-        document.getElementById("epDesc").value      = parts[3] || "";
-        document.getElementById("epPrice").value     = parts[4] || "";
-        document.getElementById("epStock").value     = parts[5] || "0";
-        document.getElementById("epCategory").value  = parts[6] || "0";
-        document.getElementById("epBrand").value     = parts[7] || "0";
-        document.getElementById("epStatus").value    = parts[8] || "0";
+    if(r.readyState === 4){
+      if(r.status === 200){
+        let res;
+        try { res = JSON.parse(r.responseText || "{}"); }
+        catch(e){
+          Swal.fire({icon:"error", title:"Load failed", text:"Invalid JSON"});
+          return;
+        }
+        if(!res.success || !res.data){
+          Swal.fire({icon:"error", title:"Load failed", text: res.message || "Unknown error"});
+          return;
+        }
 
-        // colors
-        var picked = (parts[9] || "").split(",").filter(Boolean);
-        document.querySelectorAll("#epColorGrid .color-swatch-input").forEach(function(cb){
-          cb.checked = picked.indexOf(cb.value) > -1;
+        const p = res.data;
+        document.getElementById("epId").value       = p.id ?? "";
+        document.getElementById("epName").value     = p.title ?? "";
+        document.getElementById("epDesc").value     = p.description ?? "";
+        document.getElementById("epPrice").value    = p.price ?? "";
+        document.getElementById("epStock").value    = p.qty ?? "0";
+        document.getElementById("epCategory").value = p.category_id ?? "0";
+        document.getElementById("epBrand").value    = p.brand_id ?? "0";
+        document.getElementById("epStatus").value   = p.status_id ?? "0";
+
+        const picked = Array.isArray(p.colors) ? p.colors.map(String) : [];
+        document.querySelectorAll("#epColorGrid .color-swatch-input").forEach(cb=>{
+          cb.checked = picked.includes(cb.value);
         });
 
-        // show modal
         new bootstrap.Modal(document.getElementById("editProductModal")).show();
-      }else{
-        Swal.fire({icon:"error", title:"Network error", text:"Please try again."});
+      } else {
+        Swal.fire({icon:"error", title:"Server Error", text:`${r.status} ${r.statusText}`});
       }
     }
-    }
   };
-  r.open("POST","getProduct.php",true);
+  r.open("POST", url, true);
   r.send(f);
 }
 
+
+// ---- Update Product (simple, robust) ----
 function updateProductSimple(){
-  var id   = (document.getElementById("epId").value || "").trim();
-  if(!/^\d+$/.test(id)){ Swal.fire({icon:"error", title:"Invalid product id"}); return; }
+  const id    = document.getElementById("epId").value.trim();
+  const title = document.getElementById("epName").value.trim();
+  const desc  = document.getElementById("epDesc").value.trim();
+  let   price = document.getElementById("epPrice").value.trim();
+  price = price.replace(/[^\d.]/g, ""); // strip LKR/commas/anything non-numeric
 
-  var f = new FormData();
+  const qty   = (document.getElementById("epStock").value || "0").trim();
+  const cat   = (document.getElementById("epCategory").value || "0").trim();
+  const brand = (document.getElementById("epBrand").value || "0").trim();
+  const stat  = (document.getElementById("epStatus").value || "0").trim();
+
+  const colors = Array.from(
+    document.querySelectorAll("#epColorGrid .color-swatch-input:checked")
+  ).map(cb => cb.value).join(",");
+
+  // Basic validation
+  const errs = [];
+  if (!id)    errs.push("Missing product id.");
+  if (!title) errs.push("Product name is required.");
+  if (price === "") errs.push("Price is required.");
+
+  if (errs.length){
+    Swal.fire({
+      icon: "error",
+      title: "Fix these",
+      html: "<ul style='text-align:left;margin:0;padding-left:1rem;'>" + errs.map(e=>`<li>${e}</li>`).join("") + "</ul>"
+    });
+    return;
+  }
+
+  // Build request
+  const f = new FormData();
   f.append("id", id);
-  f.append("title", (document.getElementById("epName").value || "").trim());
-  f.append("description", (document.getElementById("epDesc").value || "").trim());
-  f.append("price", (document.getElementById("epPrice").value || "").trim());
-  f.append("qty", document.getElementById("epStock").value);
-  f.append("category_id", document.getElementById("epCategory").value);
-  f.append("brand_id", document.getElementById("epBrand").value);
-  f.append("status_id", document.getElementById("epStatus").value);
+  f.append("title", title);
+  f.append("description", desc);
+  f.append("price", price);
+  f.append("qty", qty);
+  f.append("category_id", cat);
+  f.append("brand_id", brand);
+  f.append("status_id", stat);
+  f.append("colors", colors);
 
-  // colors: send as comma list
-  var colors = [];
-  document.querySelectorAll("#epColorGrid .color-swatch-input:checked").forEach(function(cb){
-    colors.push(cb.value);
-  });
-  f.append("colors", colors.join(","));
+  // Adjust path if your PHP lives elsewhere
+  const url = "updateProduct.php";
 
-  var r = new XMLHttpRequest();
-  r.onreadystatechange = function(){
-    if(r.readyState===4){
-      if(r.status===200){
-        var t = (r.responseText || "").trim();
-        if(t==="success"){
-          Swal.fire({icon:"success", title:"Updated!", text:"Product updated successfully."})
-            .then(()=> window.location.reload());
-        }else{
-          Swal.fire({icon:"error", title:"Update failed", text:t || "Unknown error"});
+  // Disable the save button while sending
+  const saveBtn = document.querySelector('[onclick="updateProductSimple()"]');
+  if (saveBtn){ saveBtn.disabled = true; saveBtn.dataset._orig = saveBtn.innerHTML; saveBtn.innerHTML = "Saving…"; }
+
+  const xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function(){
+    if (xhr.readyState === 4){
+      if (saveBtn){ saveBtn.disabled = false; saveBtn.innerHTML = saveBtn.dataset._orig || "Save changes"; }
+
+      if (xhr.status === 200){
+        const txt = (xhr.responseText || "").trim();
+
+        // Accept either plain "success" or JSON {success:true}
+        let ok = (txt === "success");
+        if (!ok && /^[{\[]/.test(txt)) {
+          try { const j = JSON.parse(txt); ok = !!j.success; } catch(e){}
         }
-      }else{
-        Swal.fire({icon:"error", title:"Network error", text:"Please try again."});
+
+        if (ok){
+          Swal.fire({icon:"success", title:"Updated", timer:1200, showConfirmButton:false})
+              .then(()=> location.reload());
+        } else {
+          Swal.fire({icon:"error", title:"Update failed", html: txt || "Unknown error"});
+        }
+      } else {
+        const body = (xhr.responseText || "").slice(0, 800)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        Swal.fire({
+          icon:"error",
+          title:`Server error ${xhr.status}`,
+          html:`<pre style="white-space:pre-wrap;text-align:left;margin:0">${body || "(no response body)"}</pre>`
+        });
       }
     }
   };
-  r.open("POST","updateProduct.php",true);
-  r.send(f);
+  xhr.open("POST", url, true);
+  xhr.send(f);
+}
+
+// REPLACE your current deleteProduct with this
+function deleteProduct(productId, productTitle) {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "Delete product '" + (productTitle || "this product") + "'?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!"
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    var form = new FormData();
+    form.append("productId", productId);
+
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+      if (request.readyState === 4) {
+        var resp = (request.responseText || "").trim();
+
+        if (request.status === 200 && resp.indexOf("success") !== -1) {
+          Swal.fire("Deleted!", "Product has been deleted.", "success")
+            .then(() => window.location.reload());
+        } else {
+          Swal.fire("Error!", resp || ("HTTP " + request.status), "error");
+        }
+      }
+    };
+    request.open("POST", "deleteProduct.php", true);
+    request.send(form);
+  });
 }
