@@ -749,3 +749,6 @@ function deleteProduct(productId, productTitle) {
     request.send(form);
   });
 }
+
+
+
