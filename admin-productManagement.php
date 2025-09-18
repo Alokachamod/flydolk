@@ -40,7 +40,7 @@ include 'connection.php';
             background: #fff;
             border: 1px solid #dee2e6;
             border-radius: .75rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05)
         }
 
         .table-hover tbody tr:hover {
@@ -180,7 +180,7 @@ include 'connection.php';
             cursor: pointer;
             transition: transform .15s, box-shadow .15s, outline-color .15s;
             position: relative;
-            overflow: hidden;
+            overflow: hidden
         }
 
         .color-swatch[data-empty="1"] {
@@ -209,7 +209,6 @@ include 'connection.php';
             text-shadow: 0 1px 2px rgba(0, 0, 0, .15)
         }
 
-        /* selected color chips */
         .color-chip {
             display: inline-flex;
             align-items: center;
@@ -230,21 +229,21 @@ include 'connection.php';
 
         html,
         body {
-            height: 100%;
+            height: 100%
         }
 
         body {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            flex-direction: column
         }
 
         main {
-            flex: 1 0 auto;
+            flex: 1 0 auto
         }
 
         footer {
-            flex-shrink: 0;
+            flex-shrink: 0
         }
     </style>
 </head>
@@ -261,7 +260,6 @@ include 'connection.php';
             </button>
         </div>
 
-        <!-- Example table (static demo rows) -->
         <div class="page-card card border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -277,18 +275,16 @@ include 'connection.php';
                             </tr>
                         </thead>
                         <?php
-
                         $rs = Database::search("
-  SELECT p.id, p.title, p.price, p.qty,
-         c.name AS category, b.name AS brand,
-         (SELECT img_url FROM product_img WHERE product_id=p.id ORDER BY img_url ASC LIMIT 1) AS img
-  FROM product p
-  JOIN category c ON c.id = p.category_id
-  JOIN brand    b ON b.id = p.brand_id
-  ORDER BY p.id DESC
-");
+            SELECT p.id, p.title, p.price, p.qty,
+                   c.name AS category, b.name AS brand,
+                   (SELECT img_url FROM product_img WHERE product_id=p.id ORDER BY img_url ASC LIMIT 1) AS img
+            FROM product p
+            JOIN category c ON c.id = p.category_id
+            JOIN brand    b ON b.id = p.brand_id
+            ORDER BY p.id DESC
+          ");
                         ?>
-
                         <tbody id="productTableBody">
                             <?php while ($r = $rs->fetch_assoc()) { ?>
                                 <tr data-id="<?= (int)$r['id'] ?>">
@@ -299,24 +295,20 @@ include 'connection.php';
                                             <span class="fw-bold"><?= htmlspecialchars($r['title'], ENT_QUOTES) ?></span>
                                         </div>
                                     </td>
-
                                     <td class="p-3"><?= htmlspecialchars($r['category']) ?></td>
                                     <td class="p-3"><?= htmlspecialchars($r['brand']) ?></td>
                                     <td class="p-3">LKR <?= number_format((float)$r['price'], 2) ?></td>
-
                                     <td class="p-3">
                                         <?= (int)$r['qty'] ?>
                                         <span class="badge <?= ($r['qty'] > 0 ? 'bg-success' : 'bg-danger') ?>">
                                             <?= ($r['qty'] > 0 ? 'In Stock' : 'Out of Stock') ?>
                                         </span>
                                     </td>
-
                                     <td class="text-end">
                                         <button type="button" class="btn btn-sm btn-outline-primary"
                                             onclick="openEditProduct(<?= (int)$r['id'] ?>)">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </button>
-
                                         <button type="button" class="btn btn-sm btn-danger ms-2"
                                             onclick='deleteProduct(<?= (int)$r["id"] ?>, <?= json_encode($r["title"]) ?>)'>
                                             <i class="bi bi-trash"></i>
@@ -353,7 +345,7 @@ include 'connection.php';
                                     </div>
                                     <div>
                                         <label class="form-label" for="pDesc">Description</label>
-                                        <textarea id="pDesc" rows="6" class="form-control" placeholder="Provide a detailed description..."></textarea>
+                                        <textarea id="pDesc" name="pDesc" rows="6" class="form-control" placeholder="Provide a detailed description..."></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -362,7 +354,7 @@ include 'connection.php';
                                 <div class="card-body p-4">
                                     <h5 class="mb-3 fw-bold">Media</h5>
                                     <div class="image-dropzone">
-                                        <input type="file" id="imgUpload" class="d-none" multiple accept=".png,.jpg,.jpeg,.gif,.webp" name="images[]" multiple accept="image/*">
+                                        <input type="file" id="imgUpload" class="d-none" name="images[]" multiple accept="image/*">
                                         <label for="imgUpload" class="w-100 m-0">
                                             <i class="bi bi-cloud-arrow-up"></i>
                                             <p class="mb-0"><b>Click to upload</b> or drag and drop.</p>
@@ -477,154 +469,7 @@ include 'connection.php';
         </div>
     </div>
 
-
-    <!-- Add Product Modal -->
-    <div class="modal fade" id="edtProductModal" tabindex="-1" aria-labelledby="editroductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title h2 fw-bold" id="addProductModalLabel">Add New Product</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="modal-body p-4">
-                    <div class="row g-4">
-                        <!-- Left -->
-                        <div class="col-lg-8">
-                            <div class="page-card card border-0 mb-4">
-                                <div class="card-body p-4">
-                                    <h5 class="mb-3 fw-bold">Product Information</h5>
-                                    <div class="mb-3">
-                                        <label class="form-label" for="pName">Product Name</label>
-                                        <input type="text" id="pName" class="form-control" placeholder="e.g., DJI Mavic 3 Pro">
-                                    </div>
-                                    <div>
-                                        <label class="form-label" for="pDesc">Description</label>
-                                        <textarea id="pDesc" rows="6" class="form-control" placeholder="Provide a detailed description..."></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="page-card card border-0">
-                                <div class="card-body p-4">
-                                    <h5 class="mb-3 fw-bold">Media</h5>
-                                    <div class="image-dropzone">
-                                        <input type="file" id="imgUpload" class="d-none" multiple accept=".png,.jpg,.jpeg,.gif,.webp" name="images[]" multiple accept="image/*">
-                                        <label for="imgUpload" class="w-100 m-0">
-                                            <i class="bi bi-cloud-arrow-up"></i>
-                                            <p class="mb-0"><b>Click to upload</b> or drag and drop.</p>
-                                            <small class="text-muted">PNG, JPG, GIF, WEBP up to 10MB each</small>
-                                        </label>
-                                    </div>
-                                    <div id="imgPreview" class="mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right -->
-                        <div class="col-lg-4">
-                            <div class="page-card card border-0 mb-4">
-                                <div class="card-body p-4">
-                                    <h5 class="mb-3 fw-bold">Pricing</h5>
-                                    <label class="form-label" for="pPrice">Price</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">LKR</span>
-                                        <input type="text" id="pPrice" class="form-control" placeholder="0.00">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <?php
-                            $rsCat = Database::search("SELECT * FROM `category`");
-                            $rsBrand = Database::search("SELECT * FROM `brand`");
-                            $rsColor = Database::search("SELECT * FROM `color`");
-                            ?>
-                            <div class="page-card card border-0 mb-4">
-                                <div class="card-body p-4">
-                                    <h5 class="mb-3 fw-bold">Organization</h5>
-                                    <div class="mb-3">
-                                        <label class="form-label" for="pCategory">Category</label>
-                                        <select id="pCategory" class="form-select">
-                                            <option selected>Select...</option>
-                                            <?php while ($row = $rsCat->fetch_assoc()) { ?>
-                                                <option value="<?= $row['id']; ?>"><?= htmlspecialchars($row['name']); ?></option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label" for="pBrand">Brand</label>
-                                        <select id="pBrand" class="form-select">
-                                            <option selected>Select...</option>
-                                            <?php while ($row = $rsBrand->fetch_assoc()) { ?>
-                                                <option value="<?= $row['id']; ?>"><?= htmlspecialchars($row['name']); ?></option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label d-block">Colors</label>
-
-                                        <!-- Selected preview -->
-                                        <div id="selectedColors" class="d-flex flex-wrap gap-2 mb-2"></div>
-
-                                        <!-- Swatch grid -->
-                                        <div class="d-flex flex-wrap gap-3">
-                                            <?php while ($row = $rsColor->fetch_assoc()) {
-                                                $id   = (int)$row['id'];
-                                                $name = htmlspecialchars($row['name']);
-                                            ?>
-                                                <div class="position-relative">
-                                                    <input type="checkbox"
-                                                        class="color-swatch-input"
-                                                        id="color-<?= $id ?>"
-                                                        name="pColor[]"
-                                                        value="<?= $id ?>"
-                                                        data-name="<?= $name ?>"
-                                                        data-color="">
-                                                    <label for="color-<?= $id ?>" class="color-swatch" title="<?= $name ?>" data-fallback="<?= $name ?>"></label>
-                                                </div>
-                                            <?php } ?>
-                                        </div>
-                                        <small class="text-muted d-block mt-2">Click circles to select multiple colors.</small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="page-card card border-0">
-                                <div class="card-body p-4">
-                                    <h5 class="mb-3 fw-bold">Stock & Status</h5>
-                                    <div class="mb-3">
-                                        <label class="form-label" for="pStock">Stock Quantity</label>
-                                        <input type="number" id="pStock" class="form-control" placeholder="0">
-                                    </div>
-                                    <?php $rsStatus = Database::search("SELECT * FROM `product_status`"); ?>
-                                    <div>
-                                        <label class="form-label" for="pStatus">Status</label>
-                                        <select id="pStatus" class="form-select">
-                                            <option value="0">Select Status</option>
-                                            <?php while ($row = $rsStatus->fetch_assoc()) { ?>
-                                                <option value="<?= $row['id']; ?>"><?= htmlspecialchars($row['name']); ?></option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div><!-- /Right -->
-                    </div><!-- /row -->
-                </div>
-                <!-- /modal-body -->
-
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="addProduct()">Save Product</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Product Modal (simple) -->
+    <!-- Edit Product Modal -->
     <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
@@ -675,7 +520,6 @@ include 'connection.php';
                             $epColor = Database::search("SELECT * FROM `color`");
                             $epStat  = Database::search("SELECT * FROM `product_status`");
                             ?>
-
                             <div class="page-card card border-0 mb-4">
                                 <div class="card-body p-4">
                                     <h5 class="mb-3 fw-bold">Organization</h5>
@@ -754,86 +598,47 @@ include 'connection.php';
         </div>
     </div>
 
-
-
-
     <footer><?php include 'admin-footer.php'; ?></footer>
 
+    <!-- Load vendors FIRST -->
+    <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Your shared logic -->
     <script src="script.js"></script>
+
+    <!-- CKEditor mount/destroy (modal-safe) -->
     <script>
-        function openEditModelModal(id, name) {
-            const idEl = document.getElementById("editModelId");
-            const nameEl = document.getElementById("editModelName");
-            if (!idEl || !nameEl) {
-                console.error("Edit Model Modal inputs not found");
-                return;
-            }
-            idEl.value = id || "";
-            nameEl.value = name || "";
-
-            // Show Bootstrap modal
-            const modalEl = document.getElementById("editModelModal");
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+        function mountCk(id) {
+            if (CKEDITOR.instances[id]) CKEDITOR.instances[id].destroy(true);
+            var el = document.getElementById(id);
+            if (el) CKEDITOR.replace(id);
         }
 
-        function updateModel() {
-            var id = (document.getElementById("editModelId").value || "").trim();
-            var name = (document.getElementById("editModelName").value || "").trim();
-
-            if (!/^\d+$/.test(id)) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Invalid model id"
-                });
-                return;
-            }
-            if (!name) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Model name required"
-                });
-                return;
-            }
-
-            var form = new FormData();
-            form.append("modelId", id);
-            form.append("modelName", name);
-
-            var req = new XMLHttpRequest();
-            req.onreadystatechange = function() {
-                if (req.readyState === 4) {
-                    if (req.status === 200) {
-                        var text = (req.responseText || "").trim();
-                        if (text === "success") {
-                            Swal.fire({
-                                    icon: "success",
-                                    title: "Updated!",
-                                    text: "Model updated successfully."
-                                })
-                                .then(() => window.location.reload());
-                        } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Update failed",
-                                text: text || "Unknown error"
-                            });
-                        }
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Network error",
-                            text: "Please try again."
-                        });
-                    }
-                }
-            };
-            req.open("POST", "updateModel.php", true);
-            req.send(form);
+        function unmountCk(id) {
+            if (CKEDITOR.instances[id]) CKEDITOR.instances[id].destroy(true);
         }
 
+        const addModalEl = document.getElementById('addProductModal');
+        const editModalEl = document.getElementById('editProductModal');
+
+        if (addModalEl) {
+            addModalEl.addEventListener('shown.bs.modal', () => mountCk('pDesc'));
+            addModalEl.addEventListener('hidden.bs.modal', () => unmountCk('pDesc'));
+        }
+        if (editModalEl) {
+            editModalEl.addEventListener('shown.bs.modal', () => mountCk('epDesc'));
+            editModalEl.addEventListener('hidden.bs.modal', () => unmountCk('epDesc'));
+        }
+
+        // If you submit via JS, ensure CKEditors sync back to textarea before read:
+        // if (CKEDITOR.instances.pDesc) CKEDITOR.instances.pDesc.updateElement();
+        // if (CKEDITOR.instances.epDesc) CKEDITOR.instances.epDesc.updateElement();
+    </script>
+
+    <!-- Page scripts that were inlined in your original file (colors, previews, etc.) -->
+    <script>
         /* ---------- Color swatches (no hex in DB; generate from name) ---------- */
         document.addEventListener("DOMContentLoaded", function() {
             const selectedWrap = document.getElementById("selectedColors");
@@ -852,7 +657,7 @@ include 'connection.php';
                 gray: "#8E8E93",
                 grey: "#8E8E93",
                 brown: "#A2845E",
-                darkGray: "#4A4A4A", // Dark gray for tech/stealth vibe
+                darkGray: "#4A4A4A",
                 brightyellow: "#FFD60A",
             };
 
@@ -866,7 +671,7 @@ include 'connection.php';
             }
 
             function needsWhiteTick(rgb) {
-                const m = rgb.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
+                const m = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
                 if (!m) return false;
                 const lin = m.slice(1).map(n => {
                     n = +n / 255;
