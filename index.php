@@ -1,7 +1,7 @@
 <?php
 
   session_start();
-  include 'header.php'; 
+  
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,6 +20,9 @@
 </head>
 
 <body>
+
+    <?php include 'header.php';  ?>
+  
 
   <!-- ===== Drone Showcase ===== -->
   <section class="showcase-wrapper">
@@ -47,7 +50,7 @@
 
           <!-- RIGHT: ring & orbit -->
           <div class="col-12 col-lg-7 order-1 order-lg-2 d-flex justify-content-center">
-            <div class="ring-wrap offset-10">
+            <div class="ring-wrap ">
               <div class="ring" id="ring"></div>
               <img id="mainDrone" class="main-drone" src="" alt="Drone">
               <div class="orbit" id="orbit"></div>

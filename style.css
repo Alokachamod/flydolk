@@ -23,7 +23,7 @@ footer {
 /* Search bar code */
 .search-wrapper {
   position: relative;
-  width: 100%;
+  
 }
 
 /* The search input field */
@@ -200,7 +200,7 @@ footer {
 }
 
 /* Show only one half of the ring (masking) */
-.ring--show-right { clip-path: inset(0 0 0 50%); } /* hide left half, show RIGHT */
+.ring--show-right { clip-path: inset(0 50% 0 0); } /* hide left half, show RIGHT */
 .ring--show-left  { clip-path: inset(0 50% 0 0); } /* hide right half, show LEFT */
 
 

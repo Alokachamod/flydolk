@@ -1,18 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="bootstrap.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-  <link rel="icon" href="imgs/Flydo.png" type="logo">
-</head>
-
-<body>
   <div class="container-fluid">
     <div class="col-12">
       <div class="row">
@@ -28,7 +14,7 @@
             <div class="collapse navbar-collapse offset-3 col-8" id="navbarSupportedContent">
               <!-- Search Form with Animated Search Bar -->
               <form class="d-flex" role="search" onsubmit="event.preventDefault();">
-                <div class="search-wrapper">
+                <div class="search-wrapper offset-1">
                   <input type="search" class="search-input" placeholder="Search...">
                   <button class="search-button" type="button" onclick="handleSearch()">
                     <img class="" height="20px" src="imgs/search.png"/>
@@ -73,14 +59,3 @@
       </div>
     </div>
   </div>
-  <script src="script.js"> </script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-    integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"
-    integrity="sha384-7qAoOXltbVP82dhxHAUje59V5r2YsVfBafyUDxEdApLPmcdhBPg1DKg1ERo0BZlK"
-    crossorigin="anonymous"></script>
-    
-</body>
-
-</html>
