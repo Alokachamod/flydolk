@@ -25,12 +25,12 @@
   
 
   <!-- ===== Drone Showcase ===== -->
-  <section class="showcase-wrapper">
+  <section class="showcase-wrapper ">
     <div class="showcase" id="showcasePin">
-      <div class="container showcase-grid">
+      <div class="container showcase-grid offset-lg-3">
         <div class="row align-items-center g-4">
           <!-- LEFT: text/data -->
-          <div class="col-12 col-lg-5 order-2 order-lg-1">
+          <div class="col-12 col-lg-4 order-2 order-lg-1">
             <div class="info-wrap" id="infoWrap">
               <h1 class="model-title display-5 mb-2" id="modelTitle">—</h1>
               <p class="mb-3" id="modelDesc">—</p>
@@ -49,7 +49,7 @@
           </div>
 
           <!-- RIGHT: ring & orbit -->
-          <div class="col-12 col-lg-7 order-1 order-lg-2 d-flex justify-content-center">
+          <div class="col-12 col-lg-8 order-1 order-lg-2 d-flex justify-content-center">
             <div class="ring-wrap ">
               <div class="ring" id="ring"></div>
               <img id="mainDrone" class="main-drone" src="" alt="Drone">
@@ -64,8 +64,7 @@
   <!-- ===== Rest of the page ===== -->
   <section class="py-5">
     <div class="container">
-      <h2 class="mb-3">More about Flydolk</h2>
-      <p class="lead">After browsing the models, continue down to the rest of your page and footer.</p>
+      
     </div>
   </section>
 
