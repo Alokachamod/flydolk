@@ -1,158 +1,98 @@
 <?php
-require 'connection.php'; // provides Database::iud(), Database::search(), Database::$connection
+// addProduct.php
+require 'connection.php';
+Database::setUpConnection();
+$cn = Database::$connection;
+$cn->set_charset('utf8mb4');
 
-// ------------------------------------------------------------
-// helpers
-// ------------------------------------------------------------
-function intOrNull($v) {
-  if ($v === null || $v === '') return null;
-  return (int)$v;
-}
-function esc($s) {
-  return Database::$connection->real_escape_string($s ?? '');
-}
+// ---- Read POST (keys must match JS) ----
+$title   = $_POST['pName']     ?? '';
+$desc    = $_POST['pDesc']     ?? '';   // HTML from custom editor
+$price   = $_POST['pPrice']    ?? '0';
+$catId   = $_POST['pCategory'] ?? '0';
+$brandId = $_POST['pBrand']    ?? '0';
+$qty     = $_POST['pStock']    ?? '0';
+$status  = $_POST['pStatus']   ?? '0';
 
-// ------------------------------------------------------------
-// read + validate fields
-// ------------------------------------------------------------
-$name     = trim($_POST['pName']     ?? '');
-$desc     = trim($_POST['pDesc']     ?? '');
-$price    = trim($_POST['pPrice']    ?? '');
-$category = intOrNull($_POST['pCategory'] ?? null);
-$brand    = intOrNull($_POST['pBrand']    ?? null);
-$stock    = intOrNull($_POST['pStock']    ?? 0);
-$status   = trim($_POST['pStatus']   ?? 'active'); // e.g., active/inactive
-$colors   = $_POST['pColor'] ?? [];               // array of color IDs (optional)
+// Colors (array)
+$colorIds = isset($_POST['pColor']) ? (array)$_POST['pColor'] : [];
 
-// basic checks
-if ($name === '' || $price === '' || $category === null || $brand === null) {
+// ---- Basic validation ----
+if ($title === '' || !is_numeric($price) || !is_numeric($qty) || !is_numeric($catId) || !is_numeric($brandId)) {
   http_response_code(400);
-  echo "Missing required fields.";
-  exit;
-}
-if (!is_numeric($price)) {
-  http_response_code(400);
-  echo "Invalid price.";
+  echo "Invalid inputs";
   exit;
 }
 
-// ------------------------------------------------------------
-// files (IMPORTANT: PHP exposes 'images[]' as $_FILES['images'])
-// ------------------------------------------------------------
-$files = $_FILES['images'] ?? ($_FILES['images[]'] ?? null);
+// ---- Ensure column exists: product.description (TEXT) ----
+// If your schema uses another name (e.g., details), change the SQL below accordingly.
 
-if (!$files || empty($files['name']) || (is_array($files['name']) && $files['name'][0] === '')) {
-  http_response_code(400);
-  echo "Please upload at least one image.";
+// ---- Insert product ----
+$stmt = $cn->prepare("
+  INSERT INTO product
+    (title, description, price, qty, category_id, brand_id, product_status_id, create_at)
+  VALUES
+    (?, ?, ?, ?, ?, ?, ?, NOW())
+");
+if (!$stmt) {
+  echo "Prepare failed: " . $cn->error;
   exit;
 }
+$stmt->bind_param("ssdiisi", $title, $desc, $price, $qty, $catId, $brandId, $status);
+if (!$stmt->execute()) {
+  echo "DB error: " . $stmt->error;
+  exit;
+}
+$productId = $stmt->insert_id;
+$stmt->close();
 
-// upload target
-$uploadDir = __DIR__ . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'products' . DIRECTORY_SEPARATOR;
-if (!is_dir($uploadDir)) {
-  // create directory tree if missing
-  if (!mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
-    http_response_code(500);
-    echo "Failed to prepare upload directory.";
-    exit;
+// ---- Optional: link colors if mapping table exists ----
+if (!empty($colorIds)) {
+  $mapTable = null;
+  $res = $cn->query("SHOW TABLES LIKE 'product_color'");
+  if ($res && $res->num_rows) $mapTable = 'product_color';
+  else {
+    $res2 = $cn->query("SHOW TABLES LIKE 'product_has_color'");
+    if ($res2 && $res2->num_rows) $mapTable = 'product_has_color';
   }
-}
-
-$allowedMimes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
-$savedPaths   = [];
-
-// normalize arrays
-$names    = (array)$files['name'];
-$tmpNames = (array)$files['tmp_name'];
-$types    = (array)$files['type'];
-$errors   = (array)$files['error'];
-$sizes    = (array)$files['size'];
-
-$slug = preg_replace('/[^a-z0-9]+/i', '-', strtolower($name));
-for ($i = 0; $i < count($names); $i++) {
-  if ($errors[$i] !== UPLOAD_ERR_OK) { continue; }
-
-  $tmp = $tmpNames[$i];
-  if (!$tmp || !is_uploaded_file($tmp)) { continue; }
-
-  // verify real image
-  $info = @getimagesize($tmp);
-  if ($info === false) { continue; }
-
-  $mime = $info['mime'] ?? $types[$i] ?? '';
-  if (!isset($allowedMimes[$mime])) { continue; }
-
-  // unique filename
-  $ext      = $allowedMimes[$mime];
-  $filename = $slug . '-' . uniqid('', true) . '.' . $ext;
-  $dest     = $uploadDir . $filename;
-
-  if (!move_uploaded_file($tmp, $dest)) { continue; }
-
-  // store relative path (what you save in DB)
-  $savedPaths[] = 'uploads/products/' . $filename;
-}
-
-if (empty($savedPaths)) {
-  http_response_code(400);
-  echo "No valid images uploaded.";
-  exit;
-}
-
-// ------------------------------------------------------------
-// DB insert (transaction)
-// ------------------------------------------------------------
-try {
-  // start transaction
-  Database::iud("START TRANSACTION");
-
-  $now = date('Y-m-d H:i:s');
-
-  // product
-  $qProduct = sprintf(
-    "INSERT INTO product (title, description, price, category_id, brand_id, qty, product_status_id, create_at)
-     VALUES ('%s','%s', %f, %d, %d, %d, '%s', '%s')",
-    esc($name), esc($desc), (float)$price, (int)$category, (int)$brand, (int)($stock ?? 0), esc($status), $now
-  );
-  Database::iud($qProduct);
-
-  // get new product id
-  $rs    = Database::search("SELECT LAST_INSERT_ID() AS id");
-  $row   = $rs->fetch_assoc();
-  $pid   = (int)($row['id'] ?? 0);
-
-  if ($pid <= 0) {
-    Database::iud("ROLLBACK");
-    http_response_code(500);
-    echo "Failed to create product.";
-    exit;
-  }
-
-  // colors (optional)
-  if (is_array($colors)) {
-    foreach ($colors as $cid) {
-      if ($cid === '' || $cid === null) continue;
-      $cid = (int)$cid;
-      if ($cid <= 0) continue;
-      Database::iud("INSERT INTO product_has_color (product_id, color_id) VALUES ($pid, $cid)");
+  if ($mapTable) {
+    $sql = "INSERT INTO `$mapTable` (product_id, color_id) VALUES (?, ?)";
+    if ($ps = $cn->prepare($sql)) {
+      foreach ($colorIds as $cid) {
+        $cid = (int)$cid;
+        $ps->bind_param("ii", $productId, $cid);
+        $ps->execute();
+      }
+      $ps->close();
     }
   }
-
-  // images
-  foreach ($savedPaths as $p) {
-    Database::iud("INSERT INTO product_img (product_id, img_url) VALUES ($pid, '" . esc($p) . "')");
-  }
-
-  // commit
-  Database::iud("COMMIT");
-  echo "success";
-} catch (Throwable $e) {
-  // rollback and clean up uploaded files
-  Database::iud("ROLLBACK");
-  foreach ($savedPaths as $p) {
-    $absolute = __DIR__ . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $p);
-    if (is_file($absolute)) { @unlink($absolute); }
-  }
-  http_response_code(500);
-  echo "Failed to add product: " . $e->getMessage();
 }
+
+// ---- Handle images ----
+$uploadDir = __DIR__ . '/uploads/products/';
+if (!is_dir($uploadDir)) {
+  @mkdir($uploadDir, 0777, true);
+}
+
+if (!empty($_FILES['images']['name']) && is_array($_FILES['images']['name'])) {
+  // table: product_img (product_id, img_url)
+  if ($ps = $cn->prepare("INSERT INTO product_img (product_id, img_url) VALUES (?, ?)")) {
+    for ($i = 0; $i < count($_FILES['images']['name']); $i++) {
+      if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
+        $tmp  = $_FILES['images']['tmp_name'][$i];
+        $name = $_FILES['images']['name'][$i];
+        $ext  = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        $safe = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($name, PATHINFO_FILENAME));
+        $file = $safe . '_' . uniqid() . '.' . $ext;
+        if (move_uploaded_file($tmp, $uploadDir . $file)) {
+          $relPath = 'uploads/products/' . $file;
+          $ps->bind_param("is", $productId, $relPath);
+          $ps->execute();
+        }
+      }
+    }
+    $ps->close();
+  }
+}
+
+echo "success";

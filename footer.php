@@ -1,92 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unique Footer Design</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            /* Added to demonstrate footer at the bottom */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #f0f2f5;
-        }
-        main {
-            flex-grow: 1;
-        }
-
-        /* Minor style to ensure link hover is consistent */
-        .footer-link:hover {
-            color: var(--bs-light) !important;
-        }
-    </style>
-</head>
-<body>
 
 
-    <!-- START: UNIQUE FOOTER COMPONENT (BOOTSTRAP VERSION) -->
-    <footer class="bg-dark text-white-50 pt-5 pb-4">
-        <div class="container">
-            <div class="row g-5">
-                <!-- About Section -->
-                <div class="col-lg-6 col-md-12">
-                    <a href="#" class="text-white text-decoration-none fs-4 fw-bold">FlydoLK</a>
-                    <p class="mt-3"> re.</p>
-                </div>
 
-                <!-- Quick Links Section -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="text-white fw-medium mb-4">Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Home</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">About Us</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Services</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Portfolio</a></li>
-                    </ul>
-                </div>
+    <footer class="fd-footer mt-5">
+  <!-- Flight Path ribbon -->
+  <div class="fd-flight-path" aria-hidden="true">
+    <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
+      <path d="M0,60 C200,10 400,110 600,60 C800,10 1000,110 1200,60" class="fd-path"></path>
+      <circle r="5" class="fd-drone"></circle>
+    </svg>
+  </div>
 
-                <!-- Resources Section -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="text-white fw-medium mb-4">Resources</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Blog</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Case Studies</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Help & FAQ</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Privacy Policy</a></li>
-                    </ul>
-                </div>
-            </div>
+  <div class="container position-relative py-5">
+    <!-- Status strip -->
+    <div class="fd-status d-flex align-items-center gap-2 rounded-3 px-3 py-2">
+      <span class="dot online" aria-label="System online"></span>
+      <span class="label">System Status:</span>
+      <strong id="fd-status-text">Online</strong>
+      <span class="flex-grow-1"></span>
+      <i class="fa-regular fa-clock"></i>
+      <span id="fd-clock">--:--:--</span>
+      <span class="fd-v-divider"></span>
+      <i class="fa-solid fa-box-archive"></i>
+      <span id="fd-orders">Orders served: <b>12,487</b></span>
+    </div>
 
-            <!-- Bottom Bar -->
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center border-top border-secondary mt-5 pt-4">
-                <div class="text-center text-sm-start">
-                    <span class="mb-2 mb-sm-0">&copy; 2025 FlydoLK. All Rights Reserved.</span>
-                    <span class="d-none d-sm-inline mx-1">|</span>
-                    <span class="d-block d-sm-inline mt-2 mt-sm-0">Designed by <a href="https://www.alokadev.dev" class="text-white-50 footer-link text-decoration-none">Alokadev</a></span>
-                </div>
-                <div class="text-center text-sm-end mt-3 mt-sm-0">
-                    <a href="#" class="text-white-50 ms-sm-4 text-decoration-none footer-link"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#" class="text-white-50 ms-4 text-decoration-none footer-link"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-white-50 ms-4 text-decoration-none footer-link"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="text-white-50 ms-4 text-decoration-none footer-link"><i class="bi bi-linkedin"></i></a>
-                </div>
-            </div>
+    <div class="row g-3 mt-3">
+      <!-- Core (radar + brand + newsletter) -->
+      <div class="col-lg-5">
+        <div class="fd-core p-3 rounded-3">
+          <div class="fd-radar mx-auto my-2">
+            <div class="ring r1"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+            <div class="sweep"></div>
+            <span class="blip b1"></span>
+            <span class="blip b2"></span>
+            <span class="blip b3"></span>
+          </div>
+          <h3 class="fd-brand text-center m-0">FLYDOLK</h3>
+          <p class="fd-tag text-center">Drones • Tech • Innovation</p>
+
+          <div class="fd-news d-flex align-items-center gap-2 rounded-pill px-2 py-1">
+            <input id="fd-news-email" type="email" class="form-control border-0 bg-transparent text-light"
+                   placeholder="Join mission updates (email)" aria-label="Email for newsletter">
+            <button type="button" class="btn rounded-circle" onclick="fdSubscribeNews()" aria-label="Subscribe">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+          <small class="fd-privacy d-block mt-1">By subscribing, you agree to our
+            <a href="/privacy.php">Privacy Policy</a>.
+          </small>
         </div>
-    </footer>
-    <!-- END: UNIQUE FOOTER COMPONENT -->
+      </div>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+      <!-- Explore -->
+      <nav class="col-6 col-lg-2">
+        <div class="fd-col h-100 rounded-3 p-3">
+          <h4 class="h6">Explore</h4>
+          <ul class="fd-links list-unstyled m-0">
+            <li><a href="/index.php" class="fx">Home</a></li>
+            <li><a href="/products.php" class="fx">Shop</a></li>
+            <li><a href="/categories.php" class="fx">Categories</a></li>
+            <li><a href="/about.php" class="fx">About Us</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Support -->
+      <nav class="col-6 col-lg-2">
+        <div class="fd-col h-100 rounded-3 p-3">
+          <h4 class="h6">Support</h4>
+          <ul class="fd-links list-unstyled m-0">
+            <li><a href="/faq.php" class="fx">FAQs</a></li>
+            <li><a href="/shipping-returns.php" class="fx">Shipping & Returns</a></li>
+            <li><a href="/privacy.php" class="fx">Privacy Policy</a></li>
+            <li><a href="/terms.php" class="fx">Terms & Conditions</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Contact + Social -->
+      <div class="col-12 col-lg-3">
+        <div class="fd-col h-100 rounded-3 p-3">
+          <h4 class="h6">Contact</h4>
+          <ul class="fd-contact list-unstyled m-0">
+            <li><i class="fa-solid fa-location-dot me-2"></i> Colombo, Sri Lanka</li>
+            <li><i class="fa-solid fa-envelope me-2"></i> <a href="mailto:contact@flydolk.com">contact@flydolk.com</a></li>
+            <li><i class="fa-solid fa-phone me-2"></i> <a href="tel:+94704866124">+94 70 486 6124</a></li>
+          </ul>
+          <div class="fd-social d-flex gap-2 mt-3">
+            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom strip -->
+    <div class="fd-bottom d-flex align-items-center gap-3 mt-3 pt-3">
+      <p class="m-0">© <span id="fd-year"></span> FLYDOLK. All rights reserved.</p>
+      <button class="fd-thruster ms-auto" onclick="fdBackToTop()" aria-label="Back to top">
+        <i class="fa-solid fa-jet-fighter-up"></i>
+      </button>
+    </div>
+  </div>
+</footer>
+<script src="script.js"></script>
+
+
+
+

@@ -1,21 +1,16 @@
+// ====== Search ======
 function handleSearch() {
-  // Find the input field relative to the button's parent
   const searchInput = document.querySelector(".search-input");
   const query = searchInput.value;
 
-  // Only trigger the search if the input is focused and has a value
   if (document.activeElement === searchInput && query) {
     alert("Searching for: " + query);
-    // You can replace the alert with your actual search logic,
-    // like submitting a form or making an API call.
   } else if (document.activeElement !== searchInput) {
-    // If the input is not focused, clicking the icon should focus it
     searchInput.focus();
   }
 }
 
-//sign up process
-
+// ====== Auth: Sign Up ======
 function signUp() {
   var n = document.getElementById("name");
   var e = document.getElementById("email");
@@ -29,131 +24,77 @@ function signUp() {
   form.append("m", m.value);
 
   var request = new XMLHttpRequest();
-
   request.onreadystatechange = function () {
     if (request.readyState == 4) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "You have signed up successfully. You can now sign in.",
-          confirmButtonText: "OK",
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "You have signed up successfully. You can now sign in.", confirmButtonText: "OK" });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
-
   request.open("POST", "signUpProcess.php", true);
   request.send(form);
 }
 
-//sign in process
-
+// ====== Auth: Sign In ======
 function signin() {
   var e = document.getElementById("e").value;
   var p = document.getElementById("p").value;
 
   var form = new FormData();
-  // FIX: Append the variables e and p directly, not e.value and p.value
   form.append("e", e);
   form.append("p", p);
 
   var request = new XMLHttpRequest();
-
   request.onreadystatechange = function () {
-    // Check if the request is complete AND successful
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
-
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "You have signed in successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = "index.php"; // Redirect after successful sign-in
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "You have signed in successfully.", confirmButtonText: "OK" })
+          .then(() => { window.location.href = "index.php"; });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
-
   request.open("POST", "signInProcess.php", true);
   request.send(form);
 }
 
-//admin-login ani,ations and functions
-
+// ====== Admin Login UI bits ======
 document.addEventListener("DOMContentLoaded", function () {
   const togglePassword = document.getElementById("togglePassword");
   const passwordInput = document.getElementById("adminPassword");
 
-  /**
-   * Toggles the password field visibility.
-   */
   if (togglePassword && passwordInput) {
     togglePassword.addEventListener("click", function () {
-      // Toggle the type attribute of the password input
-      const type =
-        passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
-
-      // Toggle the eye icon
       this.classList.toggle("fa-eye");
       this.classList.toggle("fa-eye-slash");
     });
   }
-
-  // The animations are handled by CSS, so no extra JavaScript is needed for them.
-  // The form submission logic has been removed as requested.
 });
 
 function loginAdmin() {
-  //alert("Admin login functionality is not implemented yet.");
-
   var ae = document.getElementById("adminEmail").value;
   var ap = document.getElementById("adminPassword").value;
-
-  //alert("Admin email: " + ae + ", Admin password: " + ap);
 
   var form = new FormData();
   form.append("ae", ae);
   form.append("ap", ap);
 
   var request = new XMLHttpRequest();
-
   request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
-
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "You have logged in successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = "admin-dashboard.php"; // Redirect after successful login
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "You have logged in successfully.", confirmButtonText: "OK" })
+          .then(() => { window.location.href = "admin-dashboard.php"; });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
@@ -161,14 +102,9 @@ function loginAdmin() {
   request.send(form);
 }
 
-//add category process
-
+// ====== Category ======
 function addCategory() {
-  //alert("Add category functionality is not implemented yet.");
-
   var cname = document.getElementById("category").value;
-
-  //alert("Category name: " + cname);
 
   var form = new FormData();
   form.append("c", cname);
@@ -176,22 +112,11 @@ function addCategory() {
   request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
-
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "Category added successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.reload(); // Reload the page to see the new category
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "Category added successfully.", confirmButtonText: "OK" })
+          .then(() => { window.location.reload(); });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
@@ -199,13 +124,6 @@ function addCategory() {
   request.send(form);
 }
 
-//delete category process
-
-/**
- * Asks for confirmation and deletes a category using SweetAlert2.
- * @param {number} categoryId - The ID of the category to delete.
- * @param {string} categoryName - The name of the category for the confirmation dialog.
- */
 function deleteCategory(categoryId, categoryName) {
   Swal.fire({
     title: "Are you sure?",
@@ -216,34 +134,19 @@ function deleteCategory(categoryId, categoryName) {
     cancelButtonColor: "#3085d6",
     confirmButtonText: "Yes, delete it!",
   }).then((result) => {
-    // This code runs if the user clicks "Yes, delete it!"
     if (result.isConfirmed) {
-      // Prepare the data to send (only the ID is needed)
       var form = new FormData();
       form.append("categoryId", categoryId);
 
-      // Create and send the AJAX request
       var request = new XMLHttpRequest();
       request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
-
           if (text.includes("success")) {
-            // Show success message and reload
-            Swal.fire({
-              title: "Deleted!",
-              text: "The category has been deleted.",
-              icon: "success",
-            }).then(() => {
-              window.location.reload();
-            });
+            Swal.fire({ title: "Deleted!", text: "The category has been deleted.", icon: "success" })
+              .then(() => { window.location.reload(); });
           } else {
-            // Show error message from the server
-            Swal.fire({
-              title: "Error!",
-              text: text,
-              icon: "error",
-            });
+            Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
         }
       };
@@ -253,14 +156,9 @@ function deleteCategory(categoryId, categoryName) {
   });
 }
 
-//add brand process
-
+// ====== Brand ======
 function addBrand() {
-  //alert("Add brand functionality is not implemented yet.");
-
   var bname = document.getElementById("bname").value;
-
-  //alert("Brand name: " + bname);
 
   var Form = new FormData();
   Form.append("b", bname);
@@ -268,22 +166,11 @@ function addBrand() {
   request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
-
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "Brand added successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.reload(); // Reload the page to see the new brand
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "Brand added successfully.", confirmButtonText: "OK" })
+          .then(() => { window.location.reload(); });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
@@ -291,13 +178,7 @@ function addBrand() {
   request.send(Form);
 }
 
-/**
- * Asks for confirmation and deletes a Brand using SweetAlert2.
- * @param {number} brandId - The ID of the brand to delete.
- * @param {string} brandName - The name of the brand for the confirmation dialog.
- */
 function deleteBrand(brandId, brandName) {
-  // <-- FIX 1: Renamed from deletebrand to deleteBrand
   Swal.fire({
     title: "Are you sure?",
     text: "You won't be able to revert the deletion of '" + brandName + "'!",
@@ -307,48 +188,31 @@ function deleteBrand(brandId, brandName) {
     cancelButtonColor: "#3085d6",
     confirmButtonText: "Yes, delete it!",
   }).then((result) => {
-    // This code runs if the user clicks "Yes, delete it!"
     if (result.isConfirmed) {
-      // Prepare the data to send (only the ID is needed)
       var form = new FormData();
       form.append("brandId", brandId);
 
-      // Create and send the AJAX request
       var request = new XMLHttpRequest();
       request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
-
           if (text.includes("success")) {
-            // Show success message and reload
-            Swal.fire({
-              title: "Deleted!",
-              text: "The brand has been deleted.",
-              icon: "success",
-            }).then(() => {
-              window.location.reload();
-            });
+            Swal.fire({ title: "Deleted!", text: "The brand has been deleted.", icon: "success" })
+              .then(() => { window.location.reload(); });
           } else {
-            // Show error message from the server
-            Swal.fire({
-              title: "Error!",
-              text: text,
-              icon: "error",
-            });
+            Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
         }
       };
       request.open("POST", "deleteBrand.php", true);
       request.send(form);
-      // echo("success"); // <-- FIX 2: Removed invalid PHP code
     }
   });
 }
 
+// ====== Color ======
 function addColor() {
   var cname = document.getElementById("cname").value;
-
-  //alert("Color name: " + cname + ", Color code: " + ccode);
 
   var form = new FormData();
   form.append("cname", cname);
@@ -357,22 +221,11 @@ function addColor() {
   request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
-
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "Color added successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.reload(); // Reload the page to see the new color
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "Color added successfully.", confirmButtonText: "OK" })
+          .then(() => { window.location.reload(); });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
@@ -380,10 +233,6 @@ function addColor() {
   request.send(form);
 }
 
-/** * Asks for confirmation and deletes a color using SweetAlert2.
- * @param {string} colorId - The code of the color to delete.
- * @param {string} colorName - The name of the color for the confirmation dialog.
- */
 function deleteColor(colorId, colorName) {
   Swal.fire({
     title: "Are you sure?",
@@ -402,21 +251,11 @@ function deleteColor(colorId, colorName) {
       request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
-
           if (text.includes("success")) {
-            Swal.fire({
-              title: "Deleted!",
-              text: "The color has been deleted.",
-              icon: "success",
-            }).then(() => {
-              window.location.reload();
-            });
+            Swal.fire({ title: "Deleted!", text: "The color has been deleted.", icon: "success" })
+              .then(() => { window.location.reload(); });
           } else {
-            Swal.fire({
-              title: "Error!",
-              text: text,
-              icon: "error",
-            });
+            Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
         }
       };
@@ -426,6 +265,7 @@ function deleteColor(colorId, colorName) {
   });
 }
 
+// ====== Model ======
 function addModel() {
   var mname = document.getElementById("mname").value;
 
@@ -436,22 +276,11 @@ function addModel() {
   request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
-
       if (text == "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "Model added successfully.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.reload(); // Reload the page to see the new model
-        });
+        Swal.fire({ icon: "success", title: "Success!", text: "Model added successfully.", confirmButtonText: "OK" })
+          .then(() => { window.location.reload(); });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: text,
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
     }
   };
@@ -459,11 +288,6 @@ function addModel() {
   request.send(form);
 }
 
-/**
- * Asks for confirmation and deletes a model using SweetAlert2.
- * @param {number} modelId - The ID of the model to delete.
- * @param {string} modelName - The name of the model for the confirmation dialog.
- */
 function deleteModel(modelId, modelName) {
   Swal.fire({
     title: "Are you sure?",
@@ -482,21 +306,11 @@ function deleteModel(modelId, modelName) {
       request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
-
           if (text.includes("success")) {
-            Swal.fire({
-              title: "Deleted!",
-              text: "The model has been deleted.",
-              icon: "success",
-            }).then(() => {
-              window.location.reload();
-            });
+            Swal.fire({ title: "Deleted!", text: "The model has been deleted.", icon: "success" })
+              .then(() => { window.location.reload(); });
           } else {
-            Swal.fire({
-              title: "Error!",
-              text: text,
-              icon: "error",
-            });
+            Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
         }
       };
@@ -506,10 +320,15 @@ function deleteModel(modelId, modelName) {
   });
 }
 
+/* ================== Product: Add ================== */
 function addProduct() {
-  // Grab fields
+  // 1) Sync custom editor HTML -> hidden textarea
+  const ed = document.getElementById('pDescEditor');
+  if (ed && ed._syncToHidden) ed._syncToHidden();
+
+  // 2) Grab fields
   const name = document.getElementById("pName").value;
-  const desc = document.getElementById("pDesc").value;
+  const desc = document.getElementById("pDesc").value; // now contains HTML
   const price = document.getElementById("pPrice").value;
   const category = document.getElementById("pCategory").value;
   const brand = document.getElementById("pBrand").value;
@@ -517,53 +336,37 @@ function addProduct() {
   const status = document.getElementById("pStatus").value;
   const files = document.getElementById("imgUpload").files;
 
-  // Collect selected color IDs
+  // Colors
   const colorIds = [];
-  document.querySelectorAll(".color-swatch-input:checked").forEach((cb) => {
-    colorIds.push(cb.value);
-  });
+  document.querySelectorAll(".color-swatch-input:checked").forEach((cb) => colorIds.push(cb.value));
 
-  // Build FormData (no <form> tag required)
+  // 3) Build FormData
   const fd = new FormData();
   fd.append("pName", name);
-  fd.append("pDesc", desc);
+  fd.append("pDesc", desc); // HTML from custom editor
   fd.append("pPrice", price);
   fd.append("pCategory", category);
   fd.append("pBrand", brand);
   fd.append("pStock", stock);
   fd.append("pStatus", status);
-
-  // Colors as array: pColor[]
   colorIds.forEach((id) => fd.append("pColor[]", id));
+  for (let i = 0; i < files.length; i++) fd.append("images[]", files[i]);
 
-  // Images (multiple)
-  for (let i = 0; i < files.length; i++) {
-    fd.append("images[]", files[i]); // PHP: $_FILES['images']
-  }
-
-  // POST to your PHP endpoint (create this file)
+  // 4) Send
   const xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
-      const res = xhr.responseText || "";
-      if (xhr.status === 200 && res.trim() === "success") {
-        Swal.fire({
-          icon: "success",
-          title: "Saved",
-          text: "Product created successfully.",
-        }).then(() => {
-          // optional: close modal + refresh
-          const modalEl = document.getElementById("addProductModal");
-          const modal = bootstrap.Modal.getInstance(modalEl);
-          modal && modal.hide();
-          window.location.reload();
-        });
+      const res = (xhr.responseText || "").trim();
+      if (xhr.status === 200 && res === "success") {
+        Swal.fire({ icon: "success", title: "Saved", text: "Product created successfully." })
+          .then(() => {
+            const modalEl = document.getElementById("addProductModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal && modal.hide();
+            window.location.reload();
+          });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Failed",
-          text: res || "Server error",
-        });
+        Swal.fire({ icon: "error", title: "Failed", text: res || "Server error" });
       }
     }
   };
@@ -571,69 +374,50 @@ function addProduct() {
   xhr.send(fd);
 }
 
-/* -------------------- Open & populate Edit Product modal -------------------- */
-
+/* ================== Product: Edit ================== */
 function openEditProduct(id) {
   var f = new FormData();
   f.append("id", id);
 
-  // === PATH: set this to where your PHP file actually is ===
-  // If getProductSimple.php is at /flydolk/getProductSimple.php:
-  var url = "getProduct.php";
-  // If it’s inside /flydolk/admin/ use:
-  // var url = "admin/getProductSimple.php";
-  // Or if it’s in the same folder as this page:
-  // var url = "./getProductSimple.php";
-  // ========================================================
+  var url = "getProduct.php"; // adjust if your path differs
 
   var r = new XMLHttpRequest();
   r.onreadystatechange = function () {
     if (r.readyState === 4) {
       if (r.status === 200) {
         let res;
-        try {
-          res = JSON.parse(r.responseText || "{}");
-        } catch (e) {
-          Swal.fire({
-            icon: "error",
-            title: "Load failed",
-            text: "Invalid JSON",
-          });
+        try { res = JSON.parse(r.responseText || "{}"); } catch (e) {
+          Swal.fire({ icon: "error", title: "Load failed", text: "Invalid JSON" });
           return;
         }
         if (!res.success || !res.data) {
-          Swal.fire({
-            icon: "error",
-            title: "Load failed",
-            text: res.message || "Unknown error",
-          });
+          Swal.fire({ icon: "error", title: "Load failed", text: res.message || "Unknown error" });
           return;
         }
 
         const p = res.data;
         document.getElementById("epId").value = p.id ?? "";
         document.getElementById("epName").value = p.title ?? "";
-        document.getElementById("epDesc").value = p.description ?? "";
         document.getElementById("epPrice").value = p.price ?? "";
         document.getElementById("epStock").value = p.qty ?? "0";
         document.getElementById("epCategory").value = p.category_id ?? "0";
         document.getElementById("epBrand").value = p.brand_id ?? "0";
         document.getElementById("epStatus").value = p.status_id ?? "0";
 
+        // Fill the visible editor with HTML (and ensure hidden matches)
+        const editor = document.getElementById('epDescEditor');
+        if (editor) editor.innerHTML = p.description || '';
+        const hidden = document.getElementById('epDesc');
+        if (hidden) hidden.value = p.description || '';
+
         const picked = Array.isArray(p.colors) ? p.colors.map(String) : [];
-        document
-          .querySelectorAll("#epColorGrid .color-swatch-input")
-          .forEach((cb) => {
-            cb.checked = picked.includes(cb.value);
-          });
+        document.querySelectorAll("#epColorGrid .color-swatch-input").forEach((cb) => {
+          cb.checked = picked.includes(cb.value);
+        });
 
         new bootstrap.Modal(document.getElementById("editProductModal")).show();
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Server Error",
-          text: `${r.status} ${r.statusText}`,
-        });
+        Swal.fire({ icon: "error", title: "Server Error", text: `${r.status} ${r.statusText}` });
       }
     }
   };
@@ -641,44 +425,34 @@ function openEditProduct(id) {
   r.send(f);
 }
 
-// ---- Update Product (simple, robust) ----
 function updateProductSimple() {
+  // Sync edit editor to hidden field
+  const ed = document.getElementById('epDescEditor');
+  if (ed && ed._syncToHidden) ed._syncToHidden();
+
   const id = document.getElementById("epId").value.trim();
   const title = document.getElementById("epName").value.trim();
-  const desc = document.getElementById("epDesc").value.trim();
+  const desc = document.getElementById("epDesc").value.trim(); // HTML from custom editor
   let price = document.getElementById("epPrice").value.trim();
-  price = price.replace(/[^\d.]/g, ""); // strip LKR/commas/anything non-numeric
+  price = price.replace(/[^\d.]/g, "");
 
   const qty = (document.getElementById("epStock").value || "0").trim();
   const cat = (document.getElementById("epCategory").value || "0").trim();
   const brand = (document.getElementById("epBrand").value || "0").trim();
   const stat = (document.getElementById("epStatus").value || "0").trim();
 
-  const colors = Array.from(
-    document.querySelectorAll("#epColorGrid .color-swatch-input:checked")
-  )
-    .map((cb) => cb.value)
-    .join(",");
+  const colors = Array.from(document.querySelectorAll("#epColorGrid .color-swatch-input:checked"))
+    .map((cb) => cb.value).join(",");
 
-  // Basic validation
   const errs = [];
   if (!id) errs.push("Missing product id.");
   if (!title) errs.push("Product name is required.");
   if (price === "") errs.push("Price is required.");
-
   if (errs.length) {
-    Swal.fire({
-      icon: "error",
-      title: "Fix these",
-      html:
-        "<ul style='text-align:left;margin:0;padding-left:1rem;'>" +
-        errs.map((e) => `<li>${e}</li>`).join("") +
-        "</ul>",
-    });
+    Swal.fire({ icon: "error", title: "Fix these", html: "<ul style='text-align:left;margin:0;padding-left:1rem;'>" + errs.map(e => `<li>${e}</li>`).join("") + "</ul>" });
     return;
   }
 
-  // Build request
   const f = new FormData();
   f.append("id", id);
   f.append("title", title);
@@ -690,64 +464,30 @@ function updateProductSimple() {
   f.append("status_id", stat);
   f.append("colors", colors);
 
-  // Adjust path if your PHP lives elsewhere
   const url = "updateProduct.php";
 
-  // Disable the save button while sending
   const saveBtn = document.querySelector('[onclick="updateProductSimple()"]');
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.dataset._orig = saveBtn.innerHTML;
-    saveBtn.innerHTML = "Saving…";
-  }
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.dataset._orig = saveBtn.innerHTML; saveBtn.innerHTML = "Saving…"; }
 
   const xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
-      if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = saveBtn.dataset._orig || "Save changes";
-      }
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtn.dataset._orig || "Save changes"; }
 
       if (xhr.status === 200) {
         const txt = (xhr.responseText || "").trim();
-
-        // Accept either plain "success" or JSON {success:true}
         let ok = txt === "success";
-        if (!ok && /^[{\[]/.test(txt)) {
-          try {
-            const j = JSON.parse(txt);
-            ok = !!j.success;
-          } catch (e) {}
-        }
+        if (!ok && /^[{\[]/.test(txt)) { try { ok = !!JSON.parse(txt).success; } catch(e){} }
 
         if (ok) {
-          Swal.fire({
-            icon: "success",
-            title: "Updated",
-            timer: 1200,
-            showConfirmButton: false,
-          }).then(() => location.reload());
+          Swal.fire({ icon: "success", title: "Updated", timer: 1200, showConfirmButton: false })
+            .then(() => location.reload());
         } else {
-          Swal.fire({
-            icon: "error",
-            title: "Update failed",
-            html: txt || "Unknown error",
-          });
+          Swal.fire({ icon: "error", title: "Update failed", html: txt || "Unknown error" });
         }
       } else {
-        const body = (xhr.responseText || "")
-          .slice(0, 800)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        Swal.fire({
-          icon: "error",
-          title: `Server error ${xhr.status}`,
-          html: `<pre style="white-space:pre-wrap;text-align:left;margin:0">${
-            body || "(no response body)"
-          }</pre>`,
-        });
+        const body = (xhr.responseText || "").slice(0, 800).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        Swal.fire({ icon: "error", title: `Server error ${xhr.status}`, html: `<pre style="white-space:pre-wrap;text-align:left;margin:0">${body || "(no response body)"}</pre>` });
       }
     }
   };
@@ -755,7 +495,7 @@ function updateProductSimple() {
   xhr.send(f);
 }
 
-// REPLACE your current deleteProduct with this
+// ====== Delete Product ======
 function deleteProduct(productId, productTitle) {
   Swal.fire({
     title: "Are you sure?",
@@ -775,11 +515,8 @@ function deleteProduct(productId, productTitle) {
     request.onreadystatechange = function () {
       if (request.readyState === 4) {
         var resp = (request.responseText || "").trim();
-
         if (request.status === 200 && resp.indexOf("success") !== -1) {
-          Swal.fire("Deleted!", "Product has been deleted.", "success").then(
-            () => window.location.reload()
-          );
+          Swal.fire("Deleted!", "Product has been deleted.", "success").then(() => window.location.reload());
         } else {
           Swal.fire("Error!", resp || "HTTP " + request.status, "error");
         }
@@ -790,6 +527,8 @@ function deleteProduct(productId, productTitle) {
   });
 }
 
+
+
 // ===== Flydolk Showcase Logic =====
 /* ================== Drone Showcase ================== */
 gsap.registerPlugin(ScrollTrigger);
@@ -798,49 +537,49 @@ gsap.registerPlugin(ScrollTrigger);
 const ALL_MODELS = [
   {
     name: "DJI Mavic 3 Pro",
-    img: "uploads/products/dji-mavic-3-pro-68cacb453fc045.72314692.png",
+    img: "uploads/products/Slide_DJI_Mavic_3_Pro_drone_68d56eee0d37c.png",
     price: "LKR 1,180,000",
     colors: ["Gray"],
     desc: "Flagship triple-camera (Hasselblad wide, 70mm medium tele & 166mm tele). 5.1K/50fps, omnidirectional sensing, O3+.",
   },
   {
     name: "DJI Mavic 3 Enterprise",
-    img: "uploads/products/dji-mavic-3-enterprise-68cacc83722684.77941621.png",
+    img: "uploads/products/Slide_mavic-3-enterprise-removebg-preview_68d56b0393cc0.png",
     price: "LKR 1,650,000",
     colors: ["Gray"],
     desc: "Enterprise mapping & inspection platform. 56× hybrid zoom, RTK support, advanced safety & reliability.",
   },
   {
     name: "DJI Air 2S",
-    img: "uploads/products/dji-mavic-air-2s-68ca8c7798cf25.14801095.png",
+    img: "uploads/products/Slide_Air-2S-1_68d56d5178c05.png",
     price: "LKR 650,000",
     colors: ["Gray"],
     desc: "1-inch 20MP sensor in a compact frame. 5.4K/30, MasterShots, ADS-B AirSense, 31-min flight, O3.",
   },
   {
     name: "DJI Mavic Air 2",
-    img: "uploads/products/dji-mavic-air-2-68ca8af2d2f8e7.99415276.png",
+    img: "uploads/products/Slide_DJI_air_2_68d565fbd5016.png",
     price: "LKR 525,000",
     colors: ["Gray"],
     desc: "48MP photos, 4K/60 video, 34-min flight, APAS 3.0. Balanced power and portability.",
   },
   {
     name: "DJI Mavic 2 Pro",
-    img: "uploads/products/dji-mavic-2-pro-68cac2f7b7c540.91040847.png",
+    img: "uploads/products/Slide_Mavic_2_Pro_68d56e6266e1e.png",
     price: "LKR 720,000",
     colors: ["Gray"],
     desc: "Hasselblad 1” CMOS, adjustable aperture f/2.8–f/11, Dlog-M 10-bit color, OcuSync 2.0.",
   },
   {
     name: "DJI Mavic 2 Zoom",
-    img: "uploads/products/dji-mavic-2-zoom-68cac8785da496.23265278.png",
+    img: "uploads/products/Slide_DJI_Mavic_2_Zoom_68d56e6266e1e.png",
     price: "LKR 690,000",
     colors: ["Gray"],
     desc: "24–48mm optical zoom, 12MP photos, 4K video, Dolly Zoom effect, OcuSync 2.0.",
   },
   {
-    name: "DJI Mavic Pro",
-    img: "uploads/products/dji-mavic-pro-68cac1bccc2154.12187975.png",
+    name: "DJI Mavic Air 2",
+    img: "uploads/products/Slide_DJI_air_2_68d565fbd5016.png",
     price: "LKR 560,000",
     colors: ["Gray"],
     desc: "Classic foldable with 4K stabilized camera and reliable range. Compact, dependable, iconic.",
@@ -1014,3 +753,44 @@ window.addEventListener('resize', setHeaderOffset);
 
 
 /* ================== /Drone Showcase ================== */
+
+
+//footer
+
+/* ===== FLYDOLK FOOTER ===== */
+
+// Live clock (local time)
+(function fdClockTick(){
+  const el = document.getElementById("fd-clock");
+  if(!el){ return; }
+  el.textContent = new Date().toLocaleTimeString();
+  setTimeout(fdClockTick, 1000);
+})();
+
+// Current year
+(function fdSetYear(){
+  const y = document.getElementById("fd-year");
+  if (y) y.textContent = new Date().getFullYear();
+})();
+
+// Smooth back-to-top
+function fdBackToTop(){
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Newsletter stub (client-side validation; connect to your PHP later)
+function fdSubscribeNews(){
+  const i = document.getElementById("fd-news-email");
+  if(!i) return;
+  const v = (i.value || "").trim();
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  if(!ok){
+    window.Swal ? Swal.fire({icon:'warning', title:'Invalid email', text:'Please enter a valid email.'})
+                : alert("Please enter a valid email.");
+    return;
+  }
+  // TODO: POST to newsletterSubscribe.php
+  window.Swal ? Swal.fire({icon:'success', title:'Subscribed!', text:'Welcome aboard 🛫'})
+              : alert("Subscribed!");
+  i.value = "";
+}

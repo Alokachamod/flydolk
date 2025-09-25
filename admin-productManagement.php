@@ -58,30 +58,6 @@ include 'connection.php';
             border-radius: .5rem
         }
 
-        .bg-success-light {
-            background: rgba(25, 135, 84, .1)
-        }
-
-        .text-success-light {
-            color: #198754
-        }
-
-        .bg-warning-light {
-            background: rgba(255, 193, 7, .1)
-        }
-
-        .text-warning-light {
-            color: #ffc107
-        }
-
-        .bg-danger-light {
-            background: rgba(220, 53, 69, .1)
-        }
-
-        .text-danger-light {
-            color: #dc3545
-        }
-
         .modal-header {
             border-bottom: 1px solid #dee2e6
         }
@@ -183,30 +159,11 @@ include 'connection.php';
             overflow: hidden
         }
 
-        .color-swatch[data-empty="1"] {
-            background:
-                linear-gradient(45deg, #f2f2f2 25%, transparent 25%) -6px 0/12px 12px,
-                linear-gradient(-45deg, #f2f2f2 25%, transparent 25%) -6px 0/12px 12px,
-                linear-gradient(45deg, transparent 75%, #f2f2f2 75%) -6px 0/12px 12px,
-                linear-gradient(-45deg, transparent 75%, #f2f2f2 75%) -6px 0/12px 12px, #e9ecef;
-        }
-
         .color-swatch-input:checked+.color-swatch {
             outline: 3px solid #0db1fd;
             outline-offset: 2px;
             transform: scale(1.06);
             box-shadow: 0 6px 14px rgba(13, 177, 253, .25)
-        }
-
-        .color-swatch-input:checked+.color-swatch::after {
-            content: "✓";
-            position: absolute;
-            right: 6px;
-            bottom: 2px;
-            font-size: 16px;
-            line-height: 1;
-            color: currentColor;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, .15)
         }
 
         .color-chip {
@@ -245,11 +202,56 @@ include 'connection.php';
         footer {
             flex-shrink: 0
         }
+
+        /* ===== Mini Rich Text Editor ===== */
+        .mini-editor {
+            border: 1px solid #dee2e6;
+            border-radius: .5rem;
+            background: #fff
+        }
+
+        .mini-toolbar {
+            display: flex;
+            gap: .25rem;
+            padding: .4rem;
+            border-bottom: 1px solid #dee2e6;
+            background: #f8f9fa;
+            flex-wrap: wrap;
+        }
+
+        .mini-btn {
+            border: 1px solid transparent;
+            background: #fff;
+            padding: .25rem .5rem;
+            border-radius: .35rem;
+            cursor: pointer
+        }
+
+        .mini-btn:hover {
+            border-color: #ced4da;
+            background: #fff
+        }
+
+        .mini-area {
+            min-height: 180px;
+            padding: .75rem;
+            outline: 0;
+            line-height: 1.5
+        }
+
+        .mini-area.is-empty:before {
+            content: attr(data-placeholder);
+            color: #adb5bd;
+            pointer-events: none;
+        }
+
+        .mini-area:focus {
+            box-shadow: inset 0 0 0 1px #0d6efd33
+        }
     </style>
 </head>
 
 <body>
-
     <?php include 'admin-Header.php'; ?>
 
     <main class="container-fluid p-4 p-md-5">
@@ -276,22 +278,21 @@ include 'connection.php';
                         </thead>
                         <?php
                         $rs = Database::search("
-            SELECT p.id, p.title, p.price, p.qty,
-                   c.name AS category, b.name AS brand,
-                   (SELECT img_url FROM product_img WHERE product_id=p.id ORDER BY img_url ASC LIMIT 1) AS img
-            FROM product p
-            JOIN category c ON c.id = p.category_id
-            JOIN brand    b ON b.id = p.brand_id
-            ORDER BY p.id DESC
-          ");
+              SELECT p.id, p.title, p.price, p.qty,
+                     c.name AS category, b.name AS brand,
+                     (SELECT img_url FROM product_img WHERE product_id=p.id ORDER BY img_url ASC LIMIT 1) AS img
+              FROM product p
+              JOIN category c ON c.id = p.category_id
+              JOIN brand    b ON b.id = p.brand_id
+              ORDER BY p.id DESC
+            ");
                         ?>
                         <tbody id="productTableBody">
                             <?php while ($r = $rs->fetch_assoc()) { ?>
                                 <tr data-id="<?= (int)$r['id'] ?>">
                                     <td class="p-3">
                                         <div class="d-flex align-items-center">
-                                            <img src="<?= htmlspecialchars($r['img'] ?: 'assets/img/placeholder.png', ENT_QUOTES) ?>"
-                                                class="product-image me-3" alt="">
+                                            <img src="<?= htmlspecialchars($r['img'] ?: 'assets/img/placeholder.png', ENT_QUOTES) ?>" class="product-image me-3" alt="">
                                             <span class="fw-bold"><?= htmlspecialchars($r['title'], ENT_QUOTES) ?></span>
                                         </div>
                                     </td>
@@ -305,8 +306,7 @@ include 'connection.php';
                                         </span>
                                     </td>
                                     <td class="text-end">
-                                        <button type="button" class="btn btn-sm btn-outline-primary"
-                                            onclick="openEditProduct(<?= (int)$r['id'] ?>)">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openEditProduct(<?= (int)$r['id'] ?>)">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </button>
                                         <button type="button" class="btn btn-sm btn-danger ms-2"
@@ -343,9 +343,29 @@ include 'connection.php';
                                         <label class="form-label" for="pName">Product Name</label>
                                         <input type="text" id="pName" class="form-control" placeholder="e.g., DJI Mavic 3 Pro">
                                     </div>
-                                    <div>
-                                        <label class="form-label" for="pDesc">Description</label>
-                                        <textarea id="pDesc" name="pDesc" rows="6" class="form-control" placeholder="Provide a detailed description..."></textarea>
+
+                                    <!-- Custom mini editor (visible) + hidden textarea (pDesc) -->
+                                    <div class="mb-3">
+                                        <label class="form-label" for="pDescEditor">Description</label>
+                                        <div class="mini-editor" data-for="pDesc">
+                                            <div class="mini-toolbar">
+                                                <button type="button" class="mini-btn" data-cmd="bold"><i class="bi bi-type-bold"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="italic"><i class="bi bi-type-italic"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="underline"><i class="bi bi-type-underline"></i></button>
+                                                <span class="mx-1">|</span>
+                                                <button type="button" class="mini-btn" data-cmd="insertUnorderedList"><i class="bi bi-list-ul"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="insertOrderedList"><i class="bi bi-list-ol"></i></button>
+                                                <span class="mx-1">|</span>
+                                                <button type="button" class="mini-btn" data-cmd="h1">H1</button>
+                                                <button type="button" class="mini-btn" data-cmd="h2">H2</button>
+                                                <button type="button" class="mini-btn" data-cmd="paragraph">P</button>
+                                                <span class="mx-1">|</span>
+                                                <button type="button" class="mini-btn" data-cmd="link"><i class="bi bi-link-45deg"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="removeFormat"><i class="bi bi-eraser"></i></button>
+                                            </div>
+                                            <div id="pDescEditor" class="mini-area" contenteditable="true" data-placeholder="Provide a detailed description..."></div>
+                                            <textarea id="pDesc" name="pDesc" class="d-none"></textarea>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -410,24 +430,14 @@ include 'connection.php';
 
                                     <div class="mb-3">
                                         <label class="form-label d-block">Colors</label>
-
-                                        <!-- Selected preview -->
                                         <div id="selectedColors" class="d-flex flex-wrap gap-2 mb-2"></div>
-
-                                        <!-- Swatch grid -->
                                         <div class="d-flex flex-wrap gap-3">
                                             <?php while ($row = $rsColor->fetch_assoc()) {
                                                 $id   = (int)$row['id'];
                                                 $name = htmlspecialchars($row['name']);
                                             ?>
                                                 <div class="position-relative">
-                                                    <input type="checkbox"
-                                                        class="color-swatch-input"
-                                                        id="color-<?= $id ?>"
-                                                        name="pColor[]"
-                                                        value="<?= $id ?>"
-                                                        data-name="<?= $name ?>"
-                                                        data-color="">
+                                                    <input type="checkbox" class="color-swatch-input" id="color-<?= $id ?>" name="pColor[]" value="<?= $id ?>" data-name="<?= $name ?>" data-color="">
                                                     <label for="color-<?= $id ?>" class="color-swatch" title="<?= $name ?>" data-fallback="<?= $name ?>"></label>
                                                 </div>
                                             <?php } ?>
@@ -493,9 +503,27 @@ include 'connection.php';
                                         <input type="text" id="epName" class="form-control" placeholder="Product name">
                                     </div>
 
-                                    <div>
-                                        <label class="form-label" for="epDesc">Description</label>
-                                        <textarea id="epDesc" rows="6" class="form-control" placeholder="Description"></textarea>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="epDescEditor">Description</label>
+                                        <div class="mini-editor" data-for="epDesc">
+                                            <div class="mini-toolbar">
+                                                <button type="button" class="mini-btn" data-cmd="bold"><i class="bi bi-type-bold"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="italic"><i class="bi bi-type-italic"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="underline"><i class="bi bi-type-underline"></i></button>
+                                                <span class="mx-1">|</span>
+                                                <button type="button" class="mini-btn" data-cmd="insertUnorderedList"><i class="bi bi-list-ul"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="insertOrderedList"><i class="bi bi-list-ol"></i></button>
+                                                <span class="mx-1">|</span>
+                                                <button type="button" class="mini-btn" data-cmd="h1">H1</button>
+                                                <button type="button" class="mini-btn" data-cmd="h2">H2</button>
+                                                <button type="button" class="mini-btn" data-cmd="paragraph">P</button>
+                                                <span class="mx-1">|</span>
+                                                <button type="button" class="mini-btn" data-cmd="link"><i class="bi bi-link-45deg"></i></button>
+                                                <button type="button" class="mini-btn" data-cmd="removeFormat"><i class="bi bi-eraser"></i></button>
+                                            </div>
+                                            <div id="epDescEditor" class="mini-area" contenteditable="true" data-placeholder="Description..."></div>
+                                            <textarea id="epDesc" name="epDesc" class="d-none"></textarea>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -546,16 +574,13 @@ include 'connection.php';
 
                                     <div class="mb-3">
                                         <label class="form-label d-block">Colors</label>
-
                                         <div id="epSelectedColors" class="d-flex flex-wrap gap-2 mb-2"></div>
-
                                         <div id="epColorGrid" class="d-flex flex-wrap gap-3">
                                             <?php while ($row = $epColor->fetch_assoc()) {
                                                 $id = (int)$row['id'];
                                                 $name = htmlspecialchars($row['name']); ?>
                                                 <div class="position-relative">
-                                                    <input type="checkbox" class="color-swatch-input" id="ep-color-<?= $id ?>"
-                                                        value="<?= $id ?>" data-name="<?= $name ?>">
+                                                    <input type="checkbox" class="color-swatch-input" id="ep-color-<?= $id ?>" value="<?= $id ?>" data-name="<?= $name ?>">
                                                     <label for="ep-color-<?= $id ?>" class="color-swatch" title="<?= $name ?>"></label>
                                                 </div>
                                             <?php } ?>
@@ -568,12 +593,10 @@ include 'connection.php';
                             <div class="page-card card border-0">
                                 <div class="card-body p-4">
                                     <h5 class="mb-3 fw-bold">Stock & Status</h5>
-
                                     <div class="mb-3">
                                         <label class="form-label" for="epStock">Stock Quantity</label>
                                         <input type="number" id="epStock" class="form-control" placeholder="0">
                                     </div>
-
                                     <div>
                                         <label class="form-label" for="epStatus">Status</label>
                                         <select id="epStatus" class="form-select">
@@ -600,50 +623,116 @@ include 'connection.php';
 
     <footer><?php include 'admin-footer.php'; ?></footer>
 
-    <!-- Load vendors FIRST -->
-    <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Your shared logic -->
     <script src="script.js"></script>
 
-    <!-- CKEditor mount/destroy (modal-safe) -->
+    <!-- Mini editor engine (shared for both modals) -->
     <script>
-        function mountCk(id) {
-            if (CKEDITOR.instances[id]) CKEDITOR.instances[id].destroy(true);
-            var el = document.getElementById(id);
-            if (el) CKEDITOR.replace(id);
+        function initSimpleEditor(editorId, hiddenId) {
+            const area = document.getElementById(editorId);
+            if (!area) return;
+            const container = area.closest('.mini-editor');
+            const toolbar = container.querySelector('.mini-toolbar');
+
+            function exec(cmd, val = null) {
+                if (cmd === 'h1' || cmd === 'h2' || cmd === 'paragraph') {
+                    const tag = cmd === 'h1' ? 'H1' : cmd === 'h2' ? 'H2' : 'P';
+                    document.execCommand('formatBlock', false, tag);
+                } else if (cmd === 'link') {
+                    const url = prompt('Enter URL (https://...)');
+                    if (url && /^https?:\/\//i.test(url)) document.execCommand('createLink', false, url);
+                } else {
+                    document.execCommand(cmd, false, val);
+                }
+                area.focus();
+                placeholderCheck();
+            }
+
+            toolbar.addEventListener('click', e => {
+                const btn = e.target.closest('[data-cmd]');
+                if (!btn) return;
+                exec(btn.dataset.cmd);
+            });
+
+            area.addEventListener('paste', e => {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                document.execCommand('insertText', false, text);
+            });
+
+            function placeholderCheck() {
+                const html = area.innerHTML.replace(/<br>/gi, '').trim();
+                area.classList.toggle('is-empty', html === '');
+            }
+            area.addEventListener('input', placeholderCheck);
+            placeholderCheck();
+
+            function cleanHTML(html) {
+                const allowed = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'BR', 'P', 'UL', 'OL', 'LI', 'A', 'H1', 'H2', 'H3']);
+                const root = document.createElement('div');
+                root.innerHTML = html;
+                (function walk(node) {
+                    [...node.childNodes].forEach(n => {
+                        if (n.nodeType === 1) {
+                            if (!allowed.has(n.tagName)) {
+                                n.replaceWith(...n.childNodes);
+                                return;
+                            }
+                            [...n.attributes].forEach(attr => {
+                                const an = attr.name.toLowerCase();
+                                if (n.tagName === 'A' && (an === 'href' || an === 'target' || an === 'rel')) return;
+                                n.removeAttribute(attr.name);
+                            });
+                            if (n.tagName === 'A') {
+                                let href = n.getAttribute('href') || '';
+                                if (!/^https?:\/\//i.test(href)) n.removeAttribute('href');
+                                n.setAttribute('rel', 'noopener noreferrer');
+                                n.setAttribute('target', '_blank');
+                            }
+                            walk(n);
+                        } else if (n.nodeType === 8) {
+                            n.remove();
+                        }
+                    });
+                })(root);
+                return root.innerHTML;
+            }
+
+            area._syncToHidden = () => {
+                const html = cleanHTML(area.innerHTML);
+                document.getElementById(hiddenId).value = html;
+            };
         }
 
-        function unmountCk(id) {
-            if (CKEDITOR.instances[id]) CKEDITOR.instances[id].destroy(true);
-        }
+        // Init editors when modals open (so DOM is present)
+        document.addEventListener('DOMContentLoaded', () => {
+            const addModal = document.getElementById('addProductModal');
+            const editModal = document.getElementById('editProductModal');
 
-        const addModalEl = document.getElementById('addProductModal');
-        const editModalEl = document.getElementById('editProductModal');
-
-        if (addModalEl) {
-            addModalEl.addEventListener('shown.bs.modal', () => mountCk('pDesc'));
-            addModalEl.addEventListener('hidden.bs.modal', () => unmountCk('pDesc'));
-        }
-        if (editModalEl) {
-            editModalEl.addEventListener('shown.bs.modal', () => mountCk('epDesc'));
-            editModalEl.addEventListener('hidden.bs.modal', () => unmountCk('epDesc'));
-        }
-
-        // If you submit via JS, ensure CKEditors sync back to textarea before read:
-        // if (CKEDITOR.instances.pDesc) CKEDITOR.instances.pDesc.updateElement();
-        // if (CKEDITOR.instances.epDesc) CKEDITOR.instances.epDesc.updateElement();
+            if (addModal) {
+                addModal.addEventListener('shown.bs.modal', () => {
+                    initSimpleEditor('pDescEditor', 'pDesc');
+                }, {
+                    once: true
+                });
+            }
+            if (editModal) {
+                editModal.addEventListener('shown.bs.modal', () => {
+                    initSimpleEditor('epDescEditor', 'epDesc');
+                }, {
+                    once: true
+                });
+            }
+        });
     </script>
 
-    <!-- Page scripts that were inlined in your original file (colors, previews, etc.) -->
+    <!-- Color swatches + image preview from your previous page -->
     <script>
         /* ---------- Color swatches (no hex in DB; generate from name) ---------- */
         document.addEventListener("DOMContentLoaded", function() {
             const selectedWrap = document.getElementById("selectedColors");
             const inputs = document.querySelectorAll(".color-swatch-input");
-
             const NAME_MAP = {
                 red: "#FF3B30",
                 black: "#111111",
@@ -658,7 +747,7 @@ include 'connection.php';
                 grey: "#8E8E93",
                 brown: "#A2845E",
                 darkGray: "#4A4A4A",
-                brightyellow: "#FFD60A",
+                brightyellow: "#FFD60A"
             };
 
             function nameToHSL(name) {
@@ -752,7 +841,6 @@ include 'connection.php';
                 MAX_SIZE_MB = 10;
             const allowed = ["image/png", "image/jpeg", "image/gif", "image/webp"];
             let fileList = [];
-
             const bytesToMB = b => b / (1024 * 1024);
 
             function renderPreviews() {
