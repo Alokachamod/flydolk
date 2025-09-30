@@ -1,14 +1,4 @@
-// ====== Search ======
-function handleSearch() {
-  const searchInput = document.querySelector(".search-input");
-  const query = searchInput.value;
-
-  if (document.activeElement === searchInput && query) {
-    alert("Searching for: " + query);
-  } else if (document.activeElement !== searchInput) {
-    searchInput.focus();
-  }
-}
+/* ===== Header behavior ===== */
 
 // ====== Auth: Sign Up ======
 function signUp() {
@@ -28,7 +18,12 @@ function signUp() {
     if (request.readyState == 4) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "You have signed up successfully. You can now sign in.", confirmButtonText: "OK" });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have signed up successfully. You can now sign in.",
+          confirmButtonText: "OK",
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -52,8 +47,14 @@ function signin() {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "You have signed in successfully.", confirmButtonText: "OK" })
-          .then(() => { window.location.href = "index.php"; });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have signed in successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.href = "index.php";
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -70,7 +71,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (togglePassword && passwordInput) {
     togglePassword.addEventListener("click", function () {
-      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      const type =
+        passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
       this.classList.toggle("fa-eye");
       this.classList.toggle("fa-eye-slash");
@@ -91,8 +93,14 @@ function loginAdmin() {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "You have logged in successfully.", confirmButtonText: "OK" })
-          .then(() => { window.location.href = "admin-dashboard.php"; });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "You have logged in successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.href = "admin-dashboard.php";
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -113,8 +121,14 @@ function addCategory() {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "Category added successfully.", confirmButtonText: "OK" })
-          .then(() => { window.location.reload(); });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Category added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload();
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -143,8 +157,13 @@ function deleteCategory(categoryId, categoryName) {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
           if (text.includes("success")) {
-            Swal.fire({ title: "Deleted!", text: "The category has been deleted.", icon: "success" })
-              .then(() => { window.location.reload(); });
+            Swal.fire({
+              title: "Deleted!",
+              text: "The category has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
           } else {
             Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
@@ -167,8 +186,14 @@ function addBrand() {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "Brand added successfully.", confirmButtonText: "OK" })
-          .then(() => { window.location.reload(); });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Brand added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload();
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -197,8 +222,13 @@ function deleteBrand(brandId, brandName) {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
           if (text.includes("success")) {
-            Swal.fire({ title: "Deleted!", text: "The brand has been deleted.", icon: "success" })
-              .then(() => { window.location.reload(); });
+            Swal.fire({
+              title: "Deleted!",
+              text: "The brand has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
           } else {
             Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
@@ -222,8 +252,14 @@ function addColor() {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "Color added successfully.", confirmButtonText: "OK" })
-          .then(() => { window.location.reload(); });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Color added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload();
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -252,8 +288,13 @@ function deleteColor(colorId, colorName) {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
           if (text.includes("success")) {
-            Swal.fire({ title: "Deleted!", text: "The color has been deleted.", icon: "success" })
-              .then(() => { window.location.reload(); });
+            Swal.fire({
+              title: "Deleted!",
+              text: "The color has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
           } else {
             Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
@@ -277,8 +318,14 @@ function addModel() {
     if (request.readyState == 4 && request.status == 200) {
       var text = request.responseText;
       if (text == "success") {
-        Swal.fire({ icon: "success", title: "Success!", text: "Model added successfully.", confirmButtonText: "OK" })
-          .then(() => { window.location.reload(); });
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Model added successfully.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.reload();
+        });
       } else {
         Swal.fire({ icon: "error", title: "Oops...", text: text });
       }
@@ -307,8 +354,13 @@ function deleteModel(modelId, modelName) {
         if (request.readyState == 4 && request.status == 200) {
           var text = request.responseText;
           if (text.includes("success")) {
-            Swal.fire({ title: "Deleted!", text: "The model has been deleted.", icon: "success" })
-              .then(() => { window.location.reload(); });
+            Swal.fire({
+              title: "Deleted!",
+              text: "The model has been deleted.",
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
           } else {
             Swal.fire({ title: "Error!", text: text, icon: "error" });
           }
@@ -323,7 +375,7 @@ function deleteModel(modelId, modelName) {
 /* ================== Product: Add ================== */
 function addProduct() {
   // 1) Sync custom editor HTML -> hidden textarea
-  const ed = document.getElementById('pDescEditor');
+  const ed = document.getElementById("pDescEditor");
   if (ed && ed._syncToHidden) ed._syncToHidden();
 
   // 2) Grab fields
@@ -338,7 +390,9 @@ function addProduct() {
 
   // Colors
   const colorIds = [];
-  document.querySelectorAll(".color-swatch-input:checked").forEach((cb) => colorIds.push(cb.value));
+  document
+    .querySelectorAll(".color-swatch-input:checked")
+    .forEach((cb) => colorIds.push(cb.value));
 
   // 3) Build FormData
   const fd = new FormData();
@@ -358,15 +412,22 @@ function addProduct() {
     if (xhr.readyState === 4) {
       const res = (xhr.responseText || "").trim();
       if (xhr.status === 200 && res === "success") {
-        Swal.fire({ icon: "success", title: "Saved", text: "Product created successfully." })
-          .then(() => {
-            const modalEl = document.getElementById("addProductModal");
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal && modal.hide();
-            window.location.reload();
-          });
+        Swal.fire({
+          icon: "success",
+          title: "Saved",
+          text: "Product created successfully.",
+        }).then(() => {
+          const modalEl = document.getElementById("addProductModal");
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          modal && modal.hide();
+          window.location.reload();
+        });
       } else {
-        Swal.fire({ icon: "error", title: "Failed", text: res || "Server error" });
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: res || "Server error",
+        });
       }
     }
   };
@@ -386,12 +447,22 @@ function openEditProduct(id) {
     if (r.readyState === 4) {
       if (r.status === 200) {
         let res;
-        try { res = JSON.parse(r.responseText || "{}"); } catch (e) {
-          Swal.fire({ icon: "error", title: "Load failed", text: "Invalid JSON" });
+        try {
+          res = JSON.parse(r.responseText || "{}");
+        } catch (e) {
+          Swal.fire({
+            icon: "error",
+            title: "Load failed",
+            text: "Invalid JSON",
+          });
           return;
         }
         if (!res.success || !res.data) {
-          Swal.fire({ icon: "error", title: "Load failed", text: res.message || "Unknown error" });
+          Swal.fire({
+            icon: "error",
+            title: "Load failed",
+            text: res.message || "Unknown error",
+          });
           return;
         }
 
@@ -405,19 +476,25 @@ function openEditProduct(id) {
         document.getElementById("epStatus").value = p.status_id ?? "0";
 
         // Fill the visible editor with HTML (and ensure hidden matches)
-        const editor = document.getElementById('epDescEditor');
-        if (editor) editor.innerHTML = p.description || '';
-        const hidden = document.getElementById('epDesc');
-        if (hidden) hidden.value = p.description || '';
+        const editor = document.getElementById("epDescEditor");
+        if (editor) editor.innerHTML = p.description || "";
+        const hidden = document.getElementById("epDesc");
+        if (hidden) hidden.value = p.description || "";
 
         const picked = Array.isArray(p.colors) ? p.colors.map(String) : [];
-        document.querySelectorAll("#epColorGrid .color-swatch-input").forEach((cb) => {
-          cb.checked = picked.includes(cb.value);
-        });
+        document
+          .querySelectorAll("#epColorGrid .color-swatch-input")
+          .forEach((cb) => {
+            cb.checked = picked.includes(cb.value);
+          });
 
         new bootstrap.Modal(document.getElementById("editProductModal")).show();
       } else {
-        Swal.fire({ icon: "error", title: "Server Error", text: `${r.status} ${r.statusText}` });
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: `${r.status} ${r.statusText}`,
+        });
       }
     }
   };
@@ -427,7 +504,7 @@ function openEditProduct(id) {
 
 function updateProductSimple() {
   // Sync edit editor to hidden field
-  const ed = document.getElementById('epDescEditor');
+  const ed = document.getElementById("epDescEditor");
   if (ed && ed._syncToHidden) ed._syncToHidden();
 
   const id = document.getElementById("epId").value.trim();
@@ -441,15 +518,25 @@ function updateProductSimple() {
   const brand = (document.getElementById("epBrand").value || "0").trim();
   const stat = (document.getElementById("epStatus").value || "0").trim();
 
-  const colors = Array.from(document.querySelectorAll("#epColorGrid .color-swatch-input:checked"))
-    .map((cb) => cb.value).join(",");
+  const colors = Array.from(
+    document.querySelectorAll("#epColorGrid .color-swatch-input:checked")
+  )
+    .map((cb) => cb.value)
+    .join(",");
 
   const errs = [];
   if (!id) errs.push("Missing product id.");
   if (!title) errs.push("Product name is required.");
   if (price === "") errs.push("Price is required.");
   if (errs.length) {
-    Swal.fire({ icon: "error", title: "Fix these", html: "<ul style='text-align:left;margin:0;padding-left:1rem;'>" + errs.map(e => `<li>${e}</li>`).join("") + "</ul>" });
+    Swal.fire({
+      icon: "error",
+      title: "Fix these",
+      html:
+        "<ul style='text-align:left;margin:0;padding-left:1rem;'>" +
+        errs.map((e) => `<li>${e}</li>`).join("") +
+        "</ul>",
+    });
     return;
   }
 
@@ -467,27 +554,56 @@ function updateProductSimple() {
   const url = "updateProduct.php";
 
   const saveBtn = document.querySelector('[onclick="updateProductSimple()"]');
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.dataset._orig = saveBtn.innerHTML; saveBtn.innerHTML = "Saving…"; }
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.dataset._orig = saveBtn.innerHTML;
+    saveBtn.innerHTML = "Saving…";
+  }
 
   const xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
-      if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtn.dataset._orig || "Save changes"; }
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = saveBtn.dataset._orig || "Save changes";
+      }
 
       if (xhr.status === 200) {
         const txt = (xhr.responseText || "").trim();
         let ok = txt === "success";
-        if (!ok && /^[{\[]/.test(txt)) { try { ok = !!JSON.parse(txt).success; } catch(e){} }
+        if (!ok && /^[{\[]/.test(txt)) {
+          try {
+            ok = !!JSON.parse(txt).success;
+          } catch (e) {}
+        }
 
         if (ok) {
-          Swal.fire({ icon: "success", title: "Updated", timer: 1200, showConfirmButton: false })
-            .then(() => location.reload());
+          Swal.fire({
+            icon: "success",
+            title: "Updated",
+            timer: 1200,
+            showConfirmButton: false,
+          }).then(() => location.reload());
         } else {
-          Swal.fire({ icon: "error", title: "Update failed", html: txt || "Unknown error" });
+          Swal.fire({
+            icon: "error",
+            title: "Update failed",
+            html: txt || "Unknown error",
+          });
         }
       } else {
-        const body = (xhr.responseText || "").slice(0, 800).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-        Swal.fire({ icon: "error", title: `Server error ${xhr.status}`, html: `<pre style="white-space:pre-wrap;text-align:left;margin:0">${body || "(no response body)"}</pre>` });
+        const body = (xhr.responseText || "")
+          .slice(0, 800)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        Swal.fire({
+          icon: "error",
+          title: `Server error ${xhr.status}`,
+          html: `<pre style="white-space:pre-wrap;text-align:left;margin:0">${
+            body || "(no response body)"
+          }</pre>`,
+        });
       }
     }
   };
@@ -516,7 +632,9 @@ function deleteProduct(productId, productTitle) {
       if (request.readyState === 4) {
         var resp = (request.responseText || "").trim();
         if (request.status === 200 && resp.indexOf("success") !== -1) {
-          Swal.fire("Deleted!", "Product has been deleted.", "success").then(() => window.location.reload());
+          Swal.fire("Deleted!", "Product has been deleted.", "success").then(
+            () => window.location.reload()
+          );
         } else {
           Swal.fire("Error!", resp || "HTTP " + request.status, "error");
         }
@@ -526,8 +644,6 @@ function deleteProduct(productId, productTitle) {
     request.send(form);
   });
 }
-
-
 
 // ===== Flydolk Showcase Logic =====
 /* ================== Drone Showcase ================== */
@@ -743,54 +859,73 @@ pinST = ScrollTrigger.create({
 // --- push showcase below your existing header (no header CSS changes) ---
 function setHeaderOffset() {
   // Try common header selectors; tweak if your header uses a different id/class
-  const header = document.querySelector('header, .site-header, .header, #header');
+  const header = document.querySelector(
+    "header, .site-header, .header, #header"
+  );
   const h = header ? header.offsetHeight : 0;
-  document.documentElement.style.setProperty('--header-h', `${h}px`);
+  document.documentElement.style.setProperty("--header-h", `${h}px`);
 }
 // set once + on resize to handle responsive header heights
-window.addEventListener('load', setHeaderOffset);
-window.addEventListener('resize', setHeaderOffset);
-
+window.addEventListener("load", setHeaderOffset);
+window.addEventListener("resize", setHeaderOffset);
 
 /* ================== /Drone Showcase ================== */
 
+/* ===== Header sizing + behavior ===== */
+function setHeaderOffset() {
+  const header = document.querySelector("header.fd-header");
+  const h = header ? header.offsetHeight : 0;
+  document.documentElement.style.setProperty("--header-h", `${h}px`);
+}
+window.addEventListener("load", setHeaderOffset);
+window.addEventListener("resize", setHeaderOffset);
 
-//footer
+(function () {
+  const header = document.querySelector("header.fd-header");
+  if (!header) return;
+  const toggle = () =>
+    header.classList.toggle("is-scrolled", window.scrollY > 8);
+  window.addEventListener("scroll", toggle, { passive: true });
+  toggle();
+})();
 
-/* ===== FLYDOLK FOOTER ===== */
-
-// Live clock (local time)
-(function fdClockTick(){
+/* ===== Footer utilities ===== */
+(function fdClockTick() {
   const el = document.getElementById("fd-clock");
-  if(!el){ return; }
+  if (!el) return;
   el.textContent = new Date().toLocaleTimeString();
   setTimeout(fdClockTick, 1000);
 })();
-
-// Current year
-(function fdSetYear(){
+(function fdSetYear() {
   const y = document.getElementById("fd-year");
   if (y) y.textContent = new Date().getFullYear();
 })();
-
-// Smooth back-to-top
-function fdBackToTop(){
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function fdBackToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
-// Newsletter stub (client-side validation; connect to your PHP later)
-function fdSubscribeNews(){
+function fdSubscribeNews() {
   const i = document.getElementById("fd-news-email");
-  if(!i) return;
+  if (!i) return;
   const v = (i.value || "").trim();
   const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  if(!ok){
-    window.Swal ? Swal.fire({icon:'warning', title:'Invalid email', text:'Please enter a valid email.'})
-                : alert("Please enter a valid email.");
+  if (!ok) {
+    window.Swal
+      ? Swal.fire({
+          icon: "warning",
+          title: "Invalid email",
+          text: "Please enter a valid email.",
+        })
+      : alert("Please enter a valid email.");
     return;
   }
   // TODO: POST to newsletterSubscribe.php
-  window.Swal ? Swal.fire({icon:'success', title:'Subscribed!', text:'Welcome aboard 🛫'})
-              : alert("Subscribed!");
+  window.Swal
+    ? Swal.fire({
+        icon: "success",
+        title: "Subscribed!",
+        text: "Welcome aboard 🛫",
+      })
+    : alert("Subscribed!");
   i.value = "";
 }
+/* ===== End Footer utilities ===== */
