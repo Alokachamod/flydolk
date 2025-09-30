@@ -1,7 +1,7 @@
 
 
 
-    <footer class="fd-footer mt-5">
+<footer class="fd-footer fd-footer--light mt-5">
   <!-- Flight Path ribbon -->
   <div class="fd-flight-path" aria-hidden="true">
     <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
@@ -85,15 +85,15 @@
           <h4 class="h6">Contact</h4>
           <ul class="fd-contact list-unstyled m-0">
             <li><i class="fa-solid fa-location-dot me-2"></i> Colombo, Sri Lanka</li>
-            <li><i class="fa-solid fa-envelope me-2"></i> <a href="mailto:contact@flydolk.com">contact@flydolk.com</a></li>
-            <li><i class="fa-solid fa-phone me-2"></i> <a href="tel:+94704866124">+94 70 486 6124</a></li>
+            <li><i class="fa-solid fa-envelope me-2"></i> <a href="mailto:contact@flydolk.com" style="text-decoration: none; color: white;">contact@flydolk.com</a></li>
+            <li><i class="fa-solid fa-phone me-2"></i> <a href="tel:+94704866124" style="text-decoration: none; color: white;">+94 70 486 6124</a></li>
           </ul>
           <div class="fd-social d-flex gap-2 mt-3">
-            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-            <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-            <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" aria-label="Facebook" style="text-decoration: none;"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram" style="text-decoration: none;"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" aria-label="TikTok" style="text-decoration: none;"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="#" aria-label="YouTube" style="text-decoration: none;"><i class="fa-brands fa-youtube"></i></a>
+            <a href="#" aria-label="LinkedIn" style="text-decoration: none;"><i class="fa-brands fa-linkedin-in"></i></a>
           </div>
         </div>
       </div>
@@ -108,7 +108,6 @@
     </div>
   </div>
 </footer>
-<script src="script.js"></script>
 
 
 

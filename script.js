@@ -572,7 +572,7 @@ const ALL_MODELS = [
   },
   {
     name: "DJI Mavic 2 Zoom",
-    img: "uploads/products/Slide_DJI_Mavic_2_Zoom_68d56e6266e1e.png",
+    img: "uploads/products/Slide_Mavic_2_Pro_68d56e6266e1e.png",
     price: "LKR 690,000",
     colors: ["Gray"],
     desc: "24–48mm optical zoom, 12MP photos, 4K video, Dolly Zoom effect, OcuSync 2.0.",
