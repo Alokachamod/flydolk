@@ -3,7 +3,7 @@
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-<header class="fd-header fixed-top">
+<header class="fd-header fixed-top ">
   <!-- animated scanline -->
   <div class="fd-scanline" aria-hidden="true"></div>
 
@@ -30,7 +30,7 @@
             <li><a class="dropdown-item" href="/categories.php?c=enterprise">Enterprise</a></li>
           </ul>
         </div>
-        <a class="fd-nav-link" href="/products.php">Shop</a>
+        <a class="fd-nav-link" href="shop.php">Shop</a>
         <a class="fd-nav-link" href="/service.php">Service</a>
         <a class="fd-nav-link" href="/contact.php">Contact</a>
 
