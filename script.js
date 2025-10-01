@@ -929,3 +929,6 @@ function fdSubscribeNews() {
   i.value = "";
 }
 /* ===== End Footer utilities ===== */
+
+/* ===== Shop page tweaks ===== */
+
