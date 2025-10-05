@@ -10,7 +10,7 @@
   <div class="container py-2 py-lg-3">
     <div class="d-flex align-items-center gap-3">
       <!-- Brand: Logo + mini radar -->
-      <a href="/index.php" class="fd-brandwrap d-flex align-items-center text-decoration-none">
+      <a href="index.php" class="fd-brandwrap d-flex align-items-center text-decoration-none">
         <!-- If your filename has a space, keep %20 -->
         <img src="imgs/Flydo white logo.png" alt="Flydolk Logo" class="fd-logo" />
         <div class="fd-radar-mini ms-2">
