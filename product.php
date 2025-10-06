@@ -793,28 +793,66 @@ $relatedResult = Database::search($relatedQuery);
         // Add to cart
         function addToCart() {
             const productId = <?= $productId ?>;
-            const selectedColor = document.querySelector('.color-option.active')?.textContent || 'default';
+            const selectedColorElement = document.querySelector('.color-option.active');
             
-            Swal.fire({
-                icon: 'success',
-                title: 'Added to Cart!',
-                text: `${quantity} item(s) added to your cart`,
-                showConfirmButton: true,
-                confirmButtonText: 'View Cart',
-                showCancelButton: true,
-                cancelButtonText: 'Continue Shopping',
-                confirmButtonColor: '#0db1fd'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'cart.php';
+            // Get color ID if color is selected
+            let colorId = null;
+            if (selectedColorElement) {
+                const colorTitle = selectedColorElement.getAttribute('title');
+                // Find color ID from PHP colors array
+                <?php if (!empty($colors)): ?>
+                const colors = <?= json_encode($colors) ?>;
+                const selectedColor = colors.find(c => c.name === colorTitle);
+                if (selectedColor) {
+                    colorId = selectedColor.id;
                 }
-            });
+                <?php endif; ?>
+            }
             
-            // TODO: Implement actual cart functionality
-            console.log('Add to cart:', {
-                productId: productId,
-                quantity: quantity,
-                color: selectedColor
+            // Send to backend
+            const formData = new FormData();
+            formData.append('product_id', productId);
+            formData.append('quantity', quantity);
+            if (colorId) {
+                formData.append('color_id', colorId);
+            }
+            
+            fetch('addToCart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        text: data.message || `${quantity} item(s) added to your cart`,
+                        showConfirmButton: true,
+                        confirmButtonText: 'View Cart',
+                        showCancelButton: true,
+                        cancelButtonText: 'Continue Shopping',
+                        confirmButtonColor: '#0db1fd'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'cart.php';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to add to cart'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again.'
+                });
             });
         }
     </script>
