@@ -47,7 +47,7 @@
           <a href="/account.php" class="fd-icon-btn" aria-label="Account">
             <i class="fa-regular fa-user"></i>
           </a>
-          <a href="/cart.php" class="fd-icon-btn position-relative" aria-label="Cart">
+          <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart">
             <i class="fa-solid fa-cart-shopping"></i>
             <span class="fd-badge">2</span>
           </a>

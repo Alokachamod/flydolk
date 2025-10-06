@@ -1,5 +1,12 @@
 <?php
-include 'connection.php';
+require 'connection.php';
+
+// Test database connection
+try {
+    Database::setUpConnection();
+} catch (Exception $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,6 +102,9 @@ include 'connection.php';
       transition: all 0.3s ease;
       opacity: 0;
       transform: translateY(30px);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
     
     .product-card:hover {
@@ -138,8 +148,16 @@ include 'connection.php';
       letter-spacing: 0.3px;
     }
     
+    .product-badge.out-of-stock {
+      background: #ef4444;
+      color: #fff;
+    }
+    
     .product-body {
       padding: 1.25rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
     
     .product-category {
@@ -163,6 +181,7 @@ include 'connection.php';
       font-weight: 800;
       color: #0b3d60;
       margin-bottom: 1rem;
+      margin-top: auto;
     }
     
     .product-actions {
@@ -179,12 +198,15 @@ include 'connection.php';
       border-radius: 10px;
       font-weight: 600;
       transition: all 0.2s ease;
+      text-decoration: none;
+      text-align: center;
     }
     
     .btn-view:hover {
       background: #0c9ce0;
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(13, 177, 253, 0.3);
+      color: #061018;
     }
     
     .btn-wishlist {
@@ -243,6 +265,7 @@ include 'connection.php';
       justify-content: center;
       color: #64748b;
       transition: all 0.2s ease;
+      cursor: pointer;
     }
     
     .view-btn.active {
@@ -308,10 +331,12 @@ include 'connection.php';
                   $catId = (int)$cat['id'];
                   $catName = htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8');
                   echo '<div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" value="'.$catId.'" id="cat'.$catId.'" onchange="filterProducts()">
+                    <input class="form-check-input filter-cat" type="checkbox" value="'.$catId.'" id="cat'.$catId.'" onchange="filterProducts()">
                     <label class="form-check-label" for="cat'.$catId.'">'.$catName.'</label>
                   </div>';
                 }
+              } else {
+                echo '<p class="text-muted small">No categories available</p>';
               }
               ?>
             </div>
@@ -328,10 +353,12 @@ include 'connection.php';
                   $brandId = (int)$brand['id'];
                   $brandName = htmlspecialchars($brand['name'], ENT_QUOTES, 'UTF-8');
                   echo '<div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" value="'.$brandId.'" id="brand'.$brandId.'" onchange="filterProducts()">
+                    <input class="form-check-input filter-brand" type="checkbox" value="'.$brandId.'" id="brand'.$brandId.'" onchange="filterProducts()">
                     <label class="form-check-label" for="brand'.$brandId.'">'.$brandName.'</label>
                   </div>';
                 }
+              } else {
+                echo '<p class="text-muted small">No brands available</p>';
               }
               ?>
             </div>
@@ -340,18 +367,22 @@ include 'connection.php';
             <div class="filter-section">
               <h3 class="filter-title">Price Range</h3>
               <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" value="0-500000" id="price1" onchange="filterProducts()">
+                <input class="form-check-input filter-price" type="checkbox" value="0-500000" id="price1" onchange="filterProducts()">
                 <label class="form-check-label" for="price1">Under LKR 500,000</label>
               </div>
               <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" value="500000-1000000" id="price2" onchange="filterProducts()">
+                <input class="form-check-input filter-price" type="checkbox" value="500000-1000000" id="price2" onchange="filterProducts()">
                 <label class="form-check-label" for="price2">LKR 500,000 - 1,000,000</label>
               </div>
               <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" value="1000000-9999999" id="price3" onchange="filterProducts()">
+                <input class="form-check-input filter-price" type="checkbox" value="1000000-99999999" id="price3" onchange="filterProducts()">
                 <label class="form-check-label" for="price3">Over LKR 1,000,000</label>
               </div>
             </div>
+            
+            <button class="btn btn-sm btn-outline-secondary w-100" onclick="clearFilters()">
+              <i class="fa-solid fa-times me-2"></i>Clear Filters
+            </button>
           </div>
         </aside>
         
@@ -364,7 +395,7 @@ include 'connection.php';
             </div>
             
             <div class="d-flex align-items-center gap-3">
-              <select class="form-select form-select-sm" style="width: auto;" onchange="sortProducts(this.value)">
+              <select class="form-select form-select-sm" style="width: auto;" id="sortSelect" onchange="sortProducts(this.value)">
                 <option value="newest">Newest First</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
@@ -373,7 +404,7 @@ include 'connection.php';
               
               <div class="view-toggle d-none d-md-flex">
                 <button class="view-btn active" onclick="setView('grid')" title="Grid view">
-                  <i class="fa-solid fa-grid"></i>
+                  <i class="fa-solid fa-grip"></i>
                 </button>
                 <button class="view-btn" onclick="setView('list')" title="List view">
                   <i class="fa-solid fa-list"></i>
@@ -385,55 +416,77 @@ include 'connection.php';
           <!-- Products -->
           <div class="row g-4" id="productsContainer">
             <?php
+            // Simpler query - get all products first
             $productQuery = "
-              SELECT p.id, p.title, p.price, p.qty, 
-                     c.name AS category, b.name AS brand,
-                     (SELECT img_url FROM product_img WHERE product_id = p.id LIMIT 1) AS img_url
+              SELECT 
+                p.id, 
+                p.title, 
+                p.price, 
+                p.qty, 
+                p.category_id, 
+                p.brand_id,
+                c.name AS category_name, 
+                b.name AS brand_name
               FROM product p
               LEFT JOIN category c ON c.id = p.category_id
               LEFT JOIN brand b ON b.id = p.brand_id
-              LEFT JOIN product_status ps ON ps.id = p.product_status_id
-              WHERE ps.name = 'active' OR ps.name IS NULL
-              ORDER BY p.create_at DESC
+              ORDER BY p.id DESC
             ";
             
             $productResult = Database::search($productQuery);
+            $productCount = 0;
             
             if ($productResult && $productResult->num_rows > 0) {
               while ($product = $productResult->fetch_assoc()) {
+                $productCount++;
                 $id = (int)$product['id'];
-                $title = htmlspecialchars($product['title'] ?? '—', ENT_QUOTES, 'UTF-8');
-                $category = htmlspecialchars($product['category'] ?? '', ENT_QUOTES, 'UTF-8');
-                $brand = htmlspecialchars($product['brand'] ?? '', ENT_QUOTES, 'UTF-8');
-                $price = number_format((float)($product['price'] ?? 0), 0, '.', ',');
+                $title = htmlspecialchars($product['title'] ?? 'Untitled Product', ENT_QUOTES, 'UTF-8');
+                $category = htmlspecialchars($product['category_name'] ?? 'Uncategorized', ENT_QUOTES, 'UTF-8');
+                $brand = htmlspecialchars($product['brand_name'] ?? '', ENT_QUOTES, 'UTF-8');
+                $rawPrice = (float)($product['price'] ?? 0);
+                $price = number_format($rawPrice, 0, '.', ',');
                 $qty = (int)($product['qty'] ?? 0);
-                $img = htmlspecialchars($product['img_url'] ?? 'imgs/no-image.png', ENT_QUOTES, 'UTF-8');
+                $catId = (int)($product['category_id'] ?? 0);
+                $brandId = (int)($product['brand_id'] ?? 0);
                 
-                $catId = isset($product['category_id']) ? (int)$product['category_id'] : 0;
-                $brandId = isset($product['brand_id']) ? (int)$product['brand_id'] : 0;
+                // Get first image for this product
+                $imgQuery = "SELECT img_url FROM product_img WHERE product_id = {$id} LIMIT 1";
+                $imgResult = Database::search($imgQuery);
+                $img = 'imgs/no-image.png';
+                
+                if ($imgResult && $imgResult->num_rows > 0) {
+                  $imgRow = $imgResult->fetch_assoc();
+                  $img = htmlspecialchars($imgRow['img_url'] ?? 'imgs/no-image.png', ENT_QUOTES, 'UTF-8');
+                }
                 
                 echo '<div class="col-12 col-sm-6 col-xl-4 product-item" 
                       data-category="'.$catId.'" 
                       data-brand="'.$brandId.'" 
-                      data-price="'.(float)($product['price'] ?? 0).'"
-                      data-name="'.$title.'">
-                  <article class="product-card h-100">
+                      data-price="'.$rawPrice.'"
+                      data-name="'.strtolower($title).'">
+                  <article class="product-card">
                     <div class="product-img-wrapper">';
                 
                 if ($qty < 5 && $qty > 0) {
                   echo '<span class="product-badge">Low Stock</span>';
                 } elseif ($qty == 0) {
-                  echo '<span class="product-badge bg-danger">Out of Stock</span>';
+                  echo '<span class="product-badge out-of-stock">Out of Stock</span>';
                 }
                 
-                echo '<img src="'.$img.'" alt="'.$title.'" class="product-img">
+                echo '      <img src="'.$img.'" alt="'.$title.'" class="product-img" onerror="this.src=\'imgs/no-image.png\'">
                     </div>
                     <div class="product-body">
-                      <div class="product-category">'.$category.($brand ? ' • '.$brand : '').'</div>
+                      <div class="product-category">'.$category;
+                      
+                if ($brand) {
+                  echo ' • '.$brand;
+                }
+                
+                echo '</div>
                       <h3 class="product-title">'.$title.'</h3>
                       <div class="product-price">LKR '.$price.'</div>
                       <div class="product-actions">
-                        <a href="product.php?id='.$id.'" class="btn btn-view">
+                        <a href="product.php?id='.$id.'" class="btn-view">
                           <i class="fa-solid fa-eye me-2"></i>View Details
                         </a>
                         <button class="btn-wishlist" title="Add to wishlist">
@@ -444,7 +497,9 @@ include 'connection.php';
                   </article>
                 </div>';
               }
-            } else {
+            }
+            
+            if ($productCount === 0) {
               echo '<div class="col-12">
                 <div class="empty-state">
                   <i class="fa-solid fa-box-open"></i>
@@ -523,13 +578,15 @@ include 'connection.php';
       const visible = document.querySelectorAll('.product-item:not([style*="display: none"])').length;
       document.getElementById('productCount').textContent = visible;
     }
+    
+    // Initial count
     updateProductCount();
     
     // Filter products
     function filterProducts() {
-      const categories = Array.from(document.querySelectorAll('[id^="cat"]:checked')).map(cb => cb.value);
-      const brands = Array.from(document.querySelectorAll('[id^="brand"]:checked')).map(cb => cb.value);
-      const prices = Array.from(document.querySelectorAll('[id^="price"]:checked')).map(cb => cb.value);
+      const categories = Array.from(document.querySelectorAll('.filter-cat:checked')).map(cb => cb.value);
+      const brands = Array.from(document.querySelectorAll('.filter-brand:checked')).map(cb => cb.value);
+      const prices = Array.from(document.querySelectorAll('.filter-price:checked')).map(cb => cb.value);
       
       document.querySelectorAll('.product-item').forEach(item => {
         const cat = item.dataset.category;
@@ -538,16 +595,28 @@ include 'connection.php';
         
         let show = true;
         
-        if (categories.length > 0 && !categories.includes(cat)) show = false;
-        if (brands.length > 0 && !brands.includes(brand)) show = false;
+        // Category filter
+        if (categories.length > 0 && !categories.includes(cat)) {
+          show = false;
+        }
         
+        // Brand filter
+        if (brands.length > 0 && !brands.includes(brand)) {
+          show = false;
+        }
+        
+        // Price filter
         if (prices.length > 0) {
           let matchPrice = false;
           prices.forEach(range => {
             const [min, max] = range.split('-').map(Number);
-            if (price >= min && price <= max) matchPrice = true;
+            if (price >= min && price <= max) {
+              matchPrice = true;
+            }
           });
-          if (!matchPrice) show = false;
+          if (!matchPrice) {
+            show = false;
+          }
         }
         
         item.style.display = show ? '' : 'none';
@@ -569,7 +638,7 @@ include 'connection.php';
         } else if (sortBy === 'name') {
           return a.dataset.name.localeCompare(b.dataset.name);
         }
-        return 0;
+        return 0; // newest (default order)
       });
       
       items.forEach(item => container.appendChild(item));
@@ -592,6 +661,14 @@ include 'connection.php';
           item.classList.add('col-sm-6', 'col-xl-4');
         });
       }
+    }
+    
+    // Clear all filters
+    function clearFilters() {
+      document.querySelectorAll('.filter-cat, .filter-brand, .filter-price').forEach(cb => {
+        cb.checked = false;
+      });
+      filterProducts();
     }
   </script>
 </body>
