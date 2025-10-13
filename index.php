@@ -7,15 +7,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flydolk — Drone Showcase</title>
+  <title>Flydolk – Drone Showcase</title>
 
   <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="style.css">
 
   <!-- Your main stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -39,10 +37,8 @@
 
               <div class="d-flex flex-wrap gap-2 mb-3" id="modelMeta"></div>
 
-              <div class="d-flex flex-wrap gap-2">
-                <a href="#" class="btn btn-dark pill"><i class="bi bi-bag me-2"></i>Buy now</a>
-                <a href="#" class="btn btn-outline-dark pill"><i class="bi bi-heart me-2"></i>Wishlist</a>
-                <a href="#" class="btn btn-outline-secondary pill"><i class="bi bi-eye me-2"></i>View</a>
+              <div class="d-flex flex-wrap gap-2" id="showcaseButtons">
+                <!-- Buttons will be populated by JavaScript with product links -->
               </div>
 
               <!-- mobile progress dots -->
@@ -78,8 +74,7 @@
              (SELECT img_url FROM product_img WHERE product_id = p.id LIMIT 1) AS img_url
       FROM product p
       LEFT JOIN category c ON c.id = p.category_id
-      LEFT JOIN product_status ps ON ps.id = p.product_status_id
-      WHERE ps.name = 'active' OR ps.name IS NULL
+      WHERE p.qty > 0
       ORDER BY p.create_at DESC
       LIMIT 8
     ";
@@ -99,7 +94,7 @@
       <div class="col-12 col-sm-6 col-lg-3">
         <a href="product.php?id=<?=$id?>" class="card prod-card h-100 text-decoration-none">
           <div class="ratio ratio-1x1 bg-light d-flex align-items-center justify-content-center">
-            <img src="<?=$img?>" class="p-3 img-fluid" alt="<?=$name?>">
+            <img src="<?=$img?>" class="p-3 img-fluid" alt="<?=$name?>" onerror="this.src='imgs/no-image.png'">
           </div>
           <div class="card-body">
             <?php if ($cat): ?><div class="small text-muted"><?=$cat?></div><?php endif; ?>
@@ -111,7 +106,7 @@
       <?php endwhile; ?>
     </div>
   <?php else: ?>
-    <div class="alert alert-info mb-0">No products found (or query returned empty).</div>
+    <div class="alert alert-info mb-0">No products found. Please add some products to display.</div>
   <?php endif; ?>
 </div>
 <!-- /Featured products -->
@@ -128,6 +123,63 @@
 
   <!-- Your app logic -->
   <script src="script.js"></script>
+  
+  <script>
+    // Load showcase products from database
+    <?php
+    // Fetch showcase products from database
+    $showcaseQuery = "
+      SELECT p.id, p.title, p.description, p.price, c.name AS category,
+             (SELECT img_url FROM product_img WHERE product_id = p.id LIMIT 1) AS img_url,
+             GROUP_CONCAT(DISTINCT col.name) AS colors
+      FROM product p
+      LEFT JOIN category c ON c.id = p.category_id
+      LEFT JOIN product_has_color phc ON phc.product_id = p.id
+      LEFT JOIN color col ON col.id = phc.color_id
+      WHERE p.qty > 0
+      GROUP BY p.id
+      ORDER BY p.create_at DESC
+      LIMIT 5
+    ";
+    
+    $showcaseResult = Database::search($showcaseQuery);
+    $showcaseProducts = [];
+    
+    if ($showcaseResult && $showcaseResult->num_rows > 0) {
+        while ($row = $showcaseResult->fetch_assoc()) {
+            $showcaseProducts[] = [
+                'id' => (int)$row['id'],
+                'name' => $row['title'],
+                'img' => $row['img_url'] ?? 'imgs/no-image.png',
+                'price' => 'LKR ' . number_format((float)$row['price'], 0, '.', ','),
+                'colors' => $row['colors'] ? explode(',', $row['colors']) : ['Standard'],
+                'desc' => strip_tags(substr($row['description'] ?? 'Premium drone technology', 0, 150))
+            ];
+        }
+    }
+    
+    // If no products in database, use fallback data
+    if (empty($showcaseProducts)) {
+        $showcaseProducts = [
+            [
+                'id' => 0,
+                'name' => 'DJI Mavic 3 Pro',
+                'img' => 'imgs/no-image.png',
+                'price' => 'LKR 1,180,000',
+                'colors' => ['Gray'],
+                'desc' => 'Premium drone with advanced camera system'
+            ]
+        ];
+    }
+    
+    echo "const SHOWCASE_PRODUCTS = " . json_encode($showcaseProducts) . ";";
+    ?>
+    
+    // Override the ALL_MODELS with database products
+    if (typeof SHOWCASE_PRODUCTS !== 'undefined' && SHOWCASE_PRODUCTS.length > 0) {
+        window.ALL_MODELS = SHOWCASE_PRODUCTS;
+    }
+  </script>
 </body>
 
 </html>
