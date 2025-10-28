@@ -1,5 +1,6 @@
 <?php
 // header.php – Flydolk user-side header with session integration
+// NOTE: Connection is NOT included here to prevent "freezing".
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,6 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
 $isLoggedIn = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
 $userInitial = $isLoggedIn ? strtoupper(substr($userName, 0, 1)) : '';
+
+// Set to 0 by default. JS will update this.
+$cartCount = 0; 
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
@@ -31,10 +35,20 @@ $userInitial = $isLoggedIn ? strtoupper(substr($userName, 0, 1)) : '';
         <div class="dropdown">
           <a class="fd-nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Categories</a>
           <ul class="dropdown-menu dropdown-menu-end p-2 rounded-3 shadow-sm">
-            <li><a class="dropdown-item" href="categories.php?c=mavic">Mavic Series</a></li>
-            <li><a class="dropdown-item" href="categories.php?c=air">Air Series</a></li>
-            <li><a class="dropdown-item" href="categories.php?c=mini">Mini Series</a></li>
-            <li><a class="dropdown-item" href="categories.php?c=enterprise">Enterprise</a></li>
+            <?php
+                // --- DYNAMIC CATEGORY LINKS ---
+                // We must require connection.php here, *after* the page starts loading
+                require_once 'connection.php';
+                $header_categories_rs = Database::search("SELECT id, name FROM category ORDER BY name ASC");
+                if ($header_categories_rs->num_rows > 0) {
+                    while ($cat = $header_categories_rs->fetch_assoc()) {
+                        echo '<li><a class="dropdown-item" href="shop.php?category=' . $cat['id'] . '">' . htmlspecialchars($cat['name']) . '</a></li>';
+                    }
+                } else {
+                    echo '<li><a class="dropdown-item" href="shop.php">All Products</a></li>';
+                }
+                // --- END DYNAMIC LINKS ---
+            ?>
           </ul>
         </div>
         <a class="fd-nav-link" href="shop.php">Shop</a>
@@ -78,16 +92,23 @@ $userInitial = $isLoggedIn ? strtoupper(substr($userName, 0, 1)) : '';
             </a>
           <?php endif; ?>
           
-          <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart">
+          <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart" id="header-cart-btn-desktop">
             <i class="fa-solid fa-cart-shopping"></i>
-            <span class="fd-badge">2</span>
+            <!-- DYNAMIC BADGE -->
+            <span class="fd-badge" id="header-cart-count-desktop" style="display: none;">0</span>
+            <!-- END DYNAMIC BADGE -->
           </a>
         </div>
       </nav>
 
       <!-- Mobile: cart + burger -->
       <div class="ms-auto d-lg-none d-flex align-items-center gap-2">
-        <a href="cart.php" class="fd-icon-btn" aria-label="Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+        <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart" id="header-cart-btn-mobile">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <!-- DYNAMIC BADGE (MOBILE) -->
+            <span class="fd-badge" id="header-cart-count-mobile" style="display: none;">0</span>
+            <!-- END DYNAMIC BADGE (MOBILE) -->
+        </a>
         <button class="navbar-toggler fd-burger" type="button" data-bs-toggle="offcanvas" data-bs-target="#fdOffcanvas" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
@@ -131,10 +152,21 @@ $userInitial = $isLoggedIn ? strtoupper(substr($userName, 0, 1)) : '';
       <div class="dropdown mb-2">
         <a class="fd-nav-link dropdown-toggle d-inline-block" href="#" data-bs-toggle="dropdown">Categories</a>
         <ul class="dropdown-menu p-2 rounded-3 shadow-sm">
-          <li><a class="dropdown-item" href="categories.php?c=mavic">Mavic Series</a></li>
-          <li><a class="dropdown-item" href="categories.php?c=air">Air Series</a></li>
-          <li><a class="dropdown-item" href="categories.php?c=mini">Mini Series</a></li>
-          <li><a class="dropdown-item" href="categories.php?c=enterprise">Enterprise</a></li>
+           <?php
+                // --- DYNAMIC CATEGORY LINKS (MOBILE) ---
+                // No need to query again, $header_categories_rs is already available if included
+                if (isset($header_categories_rs) && $header_categories_rs->num_rows > 0) {
+                    // Reset pointer if already used
+                    $header_categories_rs->data_seek(0); 
+                    while ($cat = $header_categories_rs->fetch_assoc()) {
+                        echo '<li><a class="dropdown-item" href="shop.php?category=' . $cat['id'] . '">' . htmlspecialchars($cat['name']) . '</a></li>';
+                    }
+                } else {
+                    // Fallback if query failed or no categories
+                     echo '<li><a class="dropdown-item" href="shop.php">All Products</a></li>';
+                }
+                // --- END DYNAMIC LINKS ---
+            ?>
         </ul>
       </div>
       <a class="fd-nav-link d-block mb-2" href="service.php">Service</a>
@@ -267,5 +299,31 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // --- ASYNC CART COUNT ---
+  // This runs after the page loads, so it doesn't "freeze" the site.
+  fetch('get_cart_count.php')
+    .then(response => response.json())
+    .then(data => {
+      const cartCount = data.cart_count;
+      if (cartCount > 0) {
+        const desktopBadge = document.getElementById('header-cart-count-desktop');
+        const mobileBadge = document.getElementById('header-cart-count-mobile');
+        
+        if (desktopBadge) {
+            desktopBadge.textContent = cartCount;
+            desktopBadge.style.display = 'flex'; // Use 'flex' as per your .fd-badge style
+        }
+        if (mobileBadge) {
+            mobileBadge.textContent = cartCount;
+            mobileBadge.style.display = 'flex';
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching cart count:', error);
+    });
+  // --- END ASYNC CART COUNT ---
 });
 </script>
+
