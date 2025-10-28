@@ -194,6 +194,7 @@ if ($product_rs->num_rows == 1) {
             color: #f1f5f9;
             font-weight: 600;
             /* Remove spinners */
+            appearance: textfield; /* Standard property for compatibility */
             -moz-appearance: textfield;
         }
         #qty-input::-webkit-outer-spin-button,
