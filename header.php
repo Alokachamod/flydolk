@@ -1,17 +1,50 @@
 <?php
 // header.php – Flydolk user-side header with session integration
-// NOTE: Connection is NOT included here to prevent "freezing".
+require_once 'connection.php'; // Ensure connection is available
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
-$userName = $isLoggedIn ? $_SESSION['user_name'] : '';
-$userInitial = $isLoggedIn ? strtoupper(substr($userName, 0, 1)) : '';
+$userName = '';
+$userInitial = '';
+$userImageUrl = ''; // <-- NEW: Variable for profile image
 
-// Set to 0 by default. JS will update this.
-$cartCount = 0; 
+if ($isLoggedIn) {
+    $user_id = (int)$_SESSION['user_id'];
+    
+    // Fetch user name
+    $user_rs = Database::search("SELECT name FROM user WHERE id = $user_id");
+    if ($user_rs->num_rows > 0) {
+        $user_data = $user_rs->fetch_assoc();
+        $userName = $user_data['name'];
+        $userInitial = strtoupper(substr($userName, 0, 1));
+        $_SESSION['user_name'] = $userName; // Ensure session is updated
+    }
+
+    // --- NEW: Fetch user profile image ---
+    $img_rs = Database::search("SELECT url FROM user_img WHERE user_id = $user_id");
+    if ($img_rs->num_rows == 1) {
+        $userImageUrl = $img_rs->fetch_assoc()['url'];
+    }
+    // --- END NEW ---
+}
+
+// Fetch categories from the database
+$categories_html = '';
+$category_rs = Database::search("SELECT id, name FROM category");
+if ($category_rs->num_rows > 0) {
+    while ($category = $category_rs->fetch_assoc()) {
+        $categories_html .= '<li><a class="dropdown-item" href="shop.php?category=' . $category['id'] . '">' . htmlspecialchars($category['name']) . '</a></li>';
+    }
+} else {
+    $categories_html = '<li><a class="dropdown-item" href="#">No categories found</a></li>';
+}
+
+// Get cart count
+$cart_count = 0;
+// We will fetch this via AJAX, so we just set a placeholder
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
@@ -35,20 +68,7 @@ $cartCount = 0;
         <div class="dropdown">
           <a class="fd-nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Categories</a>
           <ul class="dropdown-menu dropdown-menu-end p-2 rounded-3 shadow-sm">
-            <?php
-                // --- DYNAMIC CATEGORY LINKS ---
-                // We must require connection.php here, *after* the page starts loading
-                require_once 'connection.php';
-                $header_categories_rs = Database::search("SELECT id, name FROM category ORDER BY name ASC");
-                if ($header_categories_rs->num_rows > 0) {
-                    while ($cat = $header_categories_rs->fetch_assoc()) {
-                        echo '<li><a class="dropdown-item" href="shop.php?category=' . $cat['id'] . '">' . htmlspecialchars($cat['name']) . '</a></li>';
-                    }
-                } else {
-                    echo '<li><a class="dropdown-item" href="shop.php">All Products</a></li>';
-                }
-                // --- END DYNAMIC LINKS ---
-            ?>
+            <?php echo $categories_html; // Dynamic categories ?>
           </ul>
         </div>
         <a class="fd-nav-link" href="shop.php">Shop</a>
@@ -69,20 +89,27 @@ $cartCount = 0;
             <!-- Logged In User -->
             <div class="dropdown">
               <button class="fd-icon-btn dropdown-toggle border-0" type="button" data-bs-toggle="dropdown" aria-label="Account Menu">
-                <div class="fd-user-avatar">
-                  <?= htmlspecialchars($userInitial) ?>
+                <!-- **NEW: LOGIC TO SHOW IMAGE OR INITIAL** -->
+                <div id="header-avatar-container">
+                  <?php if (!empty($userImageUrl)): ?>
+                    <img src="<?php echo htmlspecialchars($userImageUrl); ?>" alt="User" class="fd-user-avatar-img">
+                  <?php else: ?>
+                    <div class="fd-user-avatar">
+                      <?php echo htmlspecialchars($userInitial); ?>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </button>
               <ul class="dropdown-menu dropdown-menu-end p-2 rounded-3 shadow-sm" style="min-width: 200px;">
                 <li class="px-3 py-2 border-bottom">
                   <small class="text-muted">Signed in as</small>
-                  <div class="fw-bold"><?= htmlspecialchars($userName) ?></div>
+                  <div class="fw-bold"><?php echo htmlspecialchars($userName); ?></div>
                 </li>
                 <li><a class="dropdown-item rounded-2" href="account.php"><i class="fa-regular fa-user me-2"></i>My Account</a></li>
-                <li><a class="dropdown-item rounded-2" href="orders.php"><i class="fa-solid fa-box me-2"></i>My Orders</a></li>
+                <li><a class="dropdown-item rounded-2" href="order_history.php"><i class="fa-solid fa-box me-2"></i>My Orders</a></li>
                 <li><a class="dropdown-item rounded-2" href="wishlist.php"><i class="fa-regular fa-heart me-2"></i>Wishlist</a></li>
                 <li><hr class="dropdown-divider my-2"></li>
-                <li><a class="dropdown-item rounded-2 text-danger" href="logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+                <li><a class="dropdown-item rounded-2 text-danger" href="logout.php" onclick="return confirm('Are you sure you want to logout?');"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
               </ul>
             </div>
           <?php else: ?>
@@ -92,22 +119,18 @@ $cartCount = 0;
             </a>
           <?php endif; ?>
           
-          <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart" id="header-cart-btn-desktop">
+          <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart">
             <i class="fa-solid fa-cart-shopping"></i>
-            <!-- DYNAMIC BADGE -->
-            <span class="fd-badge" id="header-cart-count-desktop" style="display: none;">0</span>
-            <!-- END DYNAMIC BADGE -->
+            <span class="fd-badge" id="cart-count-badge">0</span> <!-- Placeholder -->
           </a>
         </div>
       </nav>
 
       <!-- Mobile: cart + burger -->
       <div class="ms-auto d-lg-none d-flex align-items-center gap-2">
-        <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart" id="header-cart-btn-mobile">
+        <a href="cart.php" class="fd-icon-btn position-relative" aria-label="Cart">
             <i class="fa-solid fa-cart-shopping"></i>
-            <!-- DYNAMIC BADGE (MOBILE) -->
-            <span class="fd-badge" id="header-cart-count-mobile" style="display: none;">0</span>
-            <!-- END DYNAMIC BADGE (MOBILE) -->
+            <span class="fd-badge" id="cart-count-badge-mobile">0</span> <!-- Placeholder -->
         </a>
         <button class="navbar-toggler fd-burger" type="button" data-bs-toggle="offcanvas" data-bs-target="#fdOffcanvas" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -137,12 +160,19 @@ $cartCount = 0;
         <!-- Mobile: Logged In User Info -->
         <div class="fd-mobile-user-info mb-3 p-3 rounded-3" style="background: rgba(13, 177, 253, 0.1); border: 1px solid rgba(13, 177, 253, 0.2);">
           <div class="d-flex align-items-center gap-2">
-            <div class="fd-user-avatar-large">
-              <?= htmlspecialchars($userInitial) ?>
+            <!-- **NEW: LOGIC TO SHOW IMAGE OR INITIAL** -->
+            <div id="mobile-avatar-container">
+              <?php if (!empty($userImageUrl)): ?>
+                <img src="<?php echo htmlspecialchars($userImageUrl); ?>" alt="User" class="fd-user-avatar-img-large">
+              <?php else: ?>
+                <div class="fd-user-avatar-large">
+                  <?php echo htmlspecialchars($userInitial); ?>
+                </div>
+              <?php endif; ?>
             </div>
             <div>
               <small class="text-muted d-block">Welcome back</small>
-              <strong class="text-light"><?= htmlspecialchars($userName) ?></strong>
+              <strong class="text-light"><?php echo htmlspecialchars($userName); ?></strong>
             </div>
           </div>
         </div>
@@ -152,21 +182,7 @@ $cartCount = 0;
       <div class="dropdown mb-2">
         <a class="fd-nav-link dropdown-toggle d-inline-block" href="#" data-bs-toggle="dropdown">Categories</a>
         <ul class="dropdown-menu p-2 rounded-3 shadow-sm">
-           <?php
-                // --- DYNAMIC CATEGORY LINKS (MOBILE) ---
-                // No need to query again, $header_categories_rs is already available if included
-                if (isset($header_categories_rs) && $header_categories_rs->num_rows > 0) {
-                    // Reset pointer if already used
-                    $header_categories_rs->data_seek(0); 
-                    while ($cat = $header_categories_rs->fetch_assoc()) {
-                        echo '<li><a class="dropdown-item" href="shop.php?category=' . $cat['id'] . '">' . htmlspecialchars($cat['name']) . '</a></li>';
-                    }
-                } else {
-                    // Fallback if query failed or no categories
-                     echo '<li><a class="dropdown-item" href="shop.php">All Products</a></li>';
-                }
-                // --- END DYNAMIC LINKS ---
-            ?>
+           <?php echo $categories_html; // Dynamic categories ?>
         </ul>
       </div>
       <a class="fd-nav-link d-block mb-2" href="service.php">Service</a>
@@ -176,13 +192,11 @@ $cartCount = 0;
       <?php if ($isLoggedIn): ?>
         <!-- Mobile: Logged In Menu -->
         <a class="fd-nav-link d-block mb-2" href="account.php"><i class="fa-regular fa-user me-2"></i>My Account</a>
-        <a class="fd-nav-link d-block mb-2" href="orders.php"><i class="fa-solid fa-box me-2"></i>My Orders</a>
+        <a class="fd-nav-link d-block mb-2" href="order_history.php"><i class="fa-solid fa-box me-2"></i>My Orders</a>
         <a class="fd-nav-link d-block mb-2" href="wishlist.php"><i class="fa-regular fa-heart me-2"></i>Wishlist</a>
         <a class="fd-nav-link d-block mb-2" href="cart.php"><i class="fa-solid fa-cart-shopping me-2"></i>Cart</a>
         <hr class="border-secondary">
-        <a class="fd-nav-link d-block text-danger" href="logout.php" onclick="return confirm('Are you sure you want to logout?')">
-          <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
-        </a>
+        <a class="fd-nav-link d-block text-danger" href="logout.php" onclick="return confirm('Are you sure you want to logout?')"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a>
       <?php else: ?>
         <!-- Mobile: Not Logged In Menu -->
         <a class="fd-nav-link d-block mb-2" href="login-signup.php"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In / Sign Up</a>
@@ -208,6 +222,15 @@ $cartCount = 0;
   border: 2px solid var(--fd-line);
 }
 
+/* **NEW: STYLE FOR IMAGE AVATAR** */
+.fd-user-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--fd-accent-2);
+}
+
 .fd-user-avatar-large {
   width: 48px;
   height: 48px;
@@ -220,6 +243,15 @@ $cartCount = 0;
   font-weight: 700;
   font-size: 1.2rem;
   border: 2px solid var(--fd-accent);
+}
+
+/* **NEW: STYLE FOR LARGE IMAGE AVATAR** */
+.fd-user-avatar-img-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--fd-accent);
 }
 
 .fd-icon-btn.dropdown-toggle::after {
@@ -299,31 +331,22 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-
-  // --- ASYNC CART COUNT ---
-  // This runs after the page loads, so it doesn't "freeze" the site.
+  
+  // Asynchronous Cart Count Fetch
   fetch('get_cart_count.php')
     .then(response => response.json())
     .then(data => {
-      const cartCount = data.cart_count;
-      if (cartCount > 0) {
-        const desktopBadge = document.getElementById('header-cart-count-desktop');
-        const mobileBadge = document.getElementById('header-cart-count-mobile');
-        
-        if (desktopBadge) {
-            desktopBadge.textContent = cartCount;
-            desktopBadge.style.display = 'flex'; // Use 'flex' as per your .fd-badge style
-        }
-        if (mobileBadge) {
-            mobileBadge.textContent = cartCount;
-            mobileBadge.style.display = 'flex';
-        }
+      if (data.status === 'success') {
+        const count = data.cart_count;
+        const badgeDesktop = document.getElementById('cart-count-badge');
+        const badgeMobile = document.getElementById('cart-count-badge-mobile');
+        if (badgeDesktop) badgeDesktop.textContent = count;
+        if (badgeMobile) badgeMobile.textContent = count;
       }
     })
     .catch(error => {
       console.error('Error fetching cart count:', error);
     });
-  // --- END ASYNC CART COUNT ---
 });
 </script>
 
