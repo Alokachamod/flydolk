@@ -13,8 +13,13 @@ $user_id = (int)$_SESSION['user_id'];
 
 // 2. FETCH ALL USER DATA
 Database::setUpConnection();
-$user_rs = Database::search("SELECT * FROM user WHERE id = $user_id");
+// This query MUST be "SELECT *" to get all fields
+$user_rs = Database::search("SELECT * FROM user WHERE id = $user_id"); 
 $user_data = $user_rs->fetch_assoc();
+if (!$user_data) {
+    // This should not happen if user is logged in, but good to check
+    die("Error: Could not find user data.");
+}
 
 $address_rs = Database::search("
     SELECT uha.*, c.id AS city_id, d.id AS district_id, p.id AS province_id 
@@ -197,15 +202,18 @@ if ($address['district_id']) {
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control form-control-dark" id="name" name="name" value="<?php echo htmlspecialchars($user_data['name']); ?>" required>
+                                <!-- FIX: Use null coalescing ?? '' to prevent errors if key is missing or NULL -->
+                                <input type="text" class="form-control form-control-dark" id="name" name="name" value="<?php echo htmlspecialchars($user_data['name'] ?? ''); ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control form-control-dark" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email']); ?>" required>
+                                <!-- FIX: Use null coalescing ?? '' to prevent errors -->
+                                <input type="email" class="form-control form-control-dark" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="mobile" class="form-label">Mobile Number</label>
-                                <input type="tel" class="form-control form-control-dark" id="mobile" name="mobile" value="<?php echo htmlspecialchars($user_data['mobile']); ?>" required>
+                                <!-- FIX: Use null coalescing ?? '' to prevent errors -->
+                                <input type="tel" class="form-control form-control-dark" id="mobile" name="mobile" value="<?php echo htmlspecialchars($user_data['mobile'] ?? ''); ?>" required>
                             </div>
                         </div>
 
@@ -213,11 +221,11 @@ if ($address['district_id']) {
                         <div class="row g-3">
                             <div class="col-12">
                                 <label for="address1" class="form-label">Address Line 1</label>
-                                <input type="text" class="form-control form-control-dark" id="address1" name="address_line_1" value="<?php echo htmlspecialchars($address['address_line_1']); ?>">
+                                <input type="text" class="form-control form-control-dark" id="address1" name="address_line_1" value="<?php echo htmlspecialchars($address['address_line_1'] ?? ''); ?>">
                             </div>
                             <div class="col-12">
                                 <label for="address2" class="form-label">Address Line 2 <span class="text-muted">(Optional)</span></label>
-                                <input type="text" class="form-control form-control-dark" id="address2" name="address_line_2" value="<?php echo htmlspecialchars($address['address_line_2']); ?>">
+                                <input type="text" class="form-control form-control-dark" id="address2" name="address_line_2" value="<?php echo htmlspecialchars($address['address_line_2'] ?? ''); ?>">
                             </div>
                             <!-- Province Dropdown -->
                             <div class="col-md-6">
@@ -227,7 +235,7 @@ if ($address['district_id']) {
                                     <?php 
                                     $provinces_rs->data_seek(0);
                                     while($province = $provinces_rs->fetch_assoc()): ?>
-                                        <option value="<?php echo $province['id']; ?>" <?php echo ($province['id'] == $address['province_id']) ? 'selected' : ''; ?>>
+                                        <option value="<?php echo $province['id']; ?>" <?php echo ($province['id'] == ($address['province_id'] ?? null)) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($province['name']); ?>
                                         </option>
                                     <?php endwhile; ?>
@@ -236,11 +244,11 @@ if ($address['district_id']) {
                             <!-- District Dropdown -->
                             <div class="col-md-6">
                                 <label for="district" class="form-label">District</label>
-                                <select class="form-select form-select-dark" id="district" name="district_id" <?php echo !$address['province_id'] ? 'disabled' : ''; ?>>
+                                <select class="form-select form-select-dark" id="district" name="district_id" <?php echo !($address['province_id'] ?? null) ? 'disabled' : ''; ?>>
                                     <option value="">Select District</option>
                                     <?php if($districts_rs): ?>
                                         <?php while($district = $districts_rs->fetch_assoc()): ?>
-                                            <option value="<?php echo $district['id']; ?>" <?php echo ($district['id'] == $address['district_id']) ? 'selected' : ''; ?>>
+                                            <option value="<?php echo $district['id']; ?>" <?php echo ($district['id'] == ($address['district_id'] ?? null)) ? 'selected' : ''; ?>>
                                                 <?php echo htmlspecialchars($district['name']); ?>
                                             </option>
                                         <?php endwhile; ?>
@@ -250,11 +258,11 @@ if ($address['district_id']) {
                             <!-- City Dropdown -->
                             <div class="col-md-6">
                                 <label for="city" class="form-label">City</label>
-                                <select class="form-select form-select-dark" id="city" name="city_id" <?php echo !$address['district_id'] ? 'disabled' : ''; ?>>
+                                <select class="form-select form-select-dark" id="city" name="city_id" <?php echo !($address['district_id'] ?? null) ? 'disabled' : ''; ?>>
                                     <option value="">Select City</option>
                                     <?php if($cities_rs): ?>
                                         <?php while($city = $cities_rs->fetch_assoc()): ?>
-                                            <option value="<?php echo $city['id']; ?>" <?php echo ($city['id'] == $address['city_id']) ? 'selected' : ''; ?>>
+                                            <option value="<?php echo $city['id']; ?>" <?php echo ($city['id'] == ($address['city_id'] ?? null)) ? 'selected' : ''; ?>>
                                                 <?php echo htmlspecialchars($city['name']); ?>
                                             </option>
                                         <?php endwhile; ?>
@@ -264,7 +272,7 @@ if ($address['district_id']) {
                             <!-- Zip Code -->
                             <div class="col-md-6">
                                 <label for="zip" class="form-label">Zip Code</label>
-                                <input type="text" class="form-control form-control-dark" id="zip" name="zip_code" value="<?php echo htmlspecialchars($address['zip_code']); ?>">
+                                <input type="text" class="form-control form-control-dark" id="zip" name="zip_code" value="<?php echo htmlspecialchars($address['zip_code'] ?? ''); ?>">
                             </div>
                         </div>
 
@@ -355,6 +363,7 @@ if ($address['district_id']) {
                     '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
                     '</div>'
                 ].join('');
+                alertPlaceholder.innerHTML = ''; // Clear previous alerts
                 alertPlaceholder.append(wrapper);
                 window.scrollTo(0, 0); // Scroll to top to see alert
             }
@@ -382,6 +391,8 @@ if ($address['district_id']) {
                             if (data.new_name) {
                                 const userNameDiv = document.querySelector('.dropdown-menu .fw-bold');
                                 if(userNameDiv) userNameDiv.textContent = data.new_name;
+                                const mobileUserNameDiv = document.querySelector('.fd-mobile-user-info .text-light');
+                                if(mobileUserNameDiv) mobileUserNameDiv.textContent = data.new_name;
                             }
                         } else {
                             showAlert(data.message, 'danger');
@@ -436,6 +447,7 @@ if ($address['district_id']) {
                             
                             // **UPDATE HEADER AVATAR**
                             const newImgSrc = data.new_image_url + '?t=' + new Date().getTime(); // Cache buster
+                            imagePreview.src = newImgSrc; // Update profile page preview
                             const headerAvatar = `<img src="${newImgSrc}" alt="User" class="fd-user-avatar-img">`;
                             const mobileAvatar = `<img src="${newImgSrc}" alt="User" class="fd-user-avatar-img-large">`;
                             

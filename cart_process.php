@@ -1,54 +1,99 @@
 <?php
-require_once 'connection.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-// Set header to return JSON
+require_once 'connection.php';
 header('Content-Type: application/json');
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Please log in to manage your cart.']);
-    exit;
-}
-
-// Check if product_id is set
-if (!isset($_POST['product_id']) || !isset($_POST['qty'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
-    exit;
-}
-
-$user_id = (int)$_SESSION['user_id'];
-$product_id = (int)$_POST['product_id'];
-$qty = (int)$_POST['qty'];
-
-if ($product_id <= 0 || $qty <= 0) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid product details.']);
-    exit;
-}
+$response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
+$cart_count = 0; // Initialize cart count
 
 try {
-    // Check if the item is already in the cart
-    $check_sql = "SELECT * FROM cart WHERE user_id = $user_id AND product_id = $product_id";
-    $cart_rs = Database::search($check_sql);
+    // 1. CHECK LOGIN
+    if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+        throw new Exception('Please log in to add items to your cart.');
+    }
+    $user_id = (int)$_SESSION['user_id'];
+    Database::setUpConnection(); // Set up connection
 
-    if ($cart_rs->num_rows > 0) {
-        // Item already in cart, update quantity
-        $cart_item = $cart_rs->fetch_assoc();
-        $new_qty = $cart_item['qty'] + $qty;
-        $update_sql = "UPDATE cart SET qty = $new_qty WHERE id = {$cart_item['id']}";
-        Database::iud($update_sql);
-        echo json_encode(['status' => 'exists', 'message' => 'Product quantity updated in your cart.']);
-    } else {
-        // Item not in cart, insert new row
-        // We should also check product stock/availability here if we had that in the DB
-        $insert_sql = "INSERT INTO cart (user_id, product_id, qty) VALUES ($user_id, $product_id, $qty)";
-        Database::iud($insert_sql);
-        echo json_encode(['status' => 'success', 'message' => 'Product added to your cart!']);
+    // 2. GET DATA
+    $product_id = (int)($_POST['product_id'] ?? 0);
+    $qty = (int)($_POST['qty'] ?? 1); // Default to 1
+    $buy_now = (bool)($_POST['buy_now'] ?? false);
+
+    if ($product_id <= 0) {
+        throw new Exception('Invalid Product ID.');
+    }
+    if ($qty <= 0) {
+        throw new Exception('Invalid Quantity.');
     }
 
+    // 3. CHECK STOCK
+    $stock_rs = Database::search("SELECT qty FROM product WHERE id = $product_id");
+    if ($stock_rs->num_rows == 0) {
+        throw new Exception('Product not found.');
+    }
+    $stock_qty = (int)$stock_rs->fetch_assoc()['qty'];
+    
+
+    // 4. CHECK CART
+    $cart_rs = Database::search("
+        SELECT id, qty FROM cart 
+        WHERE user_id = $user_id AND product_id = $product_id
+    ");
+    
+    $total_qty_needed = $qty;
+    if ($cart_rs->num_rows == 1) {
+        $cart_item = $cart_rs->fetch_assoc();
+        $total_qty_needed = $cart_item['qty'] + $qty; // Total qty if we add
+    }
+    
+    // Check if total needed exceeds stock
+    if ($stock_qty < $total_qty_needed) {
+         throw new Exception('Not enough stock. Only ' . $stock_qty . ' available.');
+    }
+
+    // 5. ADD/UPDATE CART
+    if ($cart_rs->num_rows == 1) {
+        // Product is already in cart, UPDATE quantity
+        $cart_id = $cart_item['id'];
+        Database::iud("
+            UPDATE cart SET qty = $total_qty_needed 
+            WHERE id = $cart_id
+        ");
+        $response['message'] = 'Cart updated successfully!';
+    } else {
+        // Product is not in cart, INSERT new row
+        Database::iud("
+            INSERT INTO cart (user_id, product_id, qty, added_at, updated_at) 
+            VALUES ($user_id, $product_id, $qty, NOW(), NOW())
+        ");
+        $response['message'] = 'Product added to cart!';
+    }
+    
+    $response['status'] = 'success';
+    
+    // --- !! NEW CODE TO FIX BADGE !! ---
+    // 6. GET NEW TOTAL CART COUNT
+    $count_rs = Database::search("SELECT COUNT(id) AS count FROM cart WHERE user_id = $user_id");
+    if ($count_rs && $count_rs->num_rows > 0) {
+        $cart_count = (int)$count_rs->fetch_assoc()['count'];
+    }
+    $response['cart_count'] = $cart_count; // Add count to the response
+    // --- !! END NEW CODE !! ---
+
+    if ($buy_now) {
+        $response['redirect'] = 'checkout.php';
+    }
+
+} catch (mysqli_sql_exception $e) {
+    // Handle database errors
+    $response['message'] = 'Database error: ' . $e->getMessage();
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
+    // Handle other errors (like login check)
+    $response['message'] = $e->getMessage();
 }
+
+echo json_encode($response);
 ?>
+
