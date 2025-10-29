@@ -1,150 +1,213 @@
 <?php
-// This file handles a "Cash on Delivery" order placement.
-// It now reads *only* the selected items from the POST data.
+// This file handles all the backend logic for placing an order.
+
+// --- 1. SETUP & EMAIL (PHPMailer) ---
+// We need PHPMailer to send the invoice email
+// You MUST install it first by running this command in your project folder:
+// composer require phpmailer/phpmailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+// Load Composer's autoloader
+$phpMailerAutoload = __DIR__ . '/vendor/autoload.php';
+$phpMailerInstalled = file_exists($phpMailerAutoload);
+if ($phpMailerInstalled) {
+    require $phpMailerAutoload;
+}
 
 require_once 'connection.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 1. CHECK LOGIN & METHOD ---
+// --- 2. SECURITY & DATA PREPARATION ---
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
     header('Location: login-signup.php?redirect=checkout');
     exit;
 }
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: checkout.php?error=Invalid access method.');
-    exit;
-}
 
+// Get user ID and email (for the invoice)
 $user_id = (int)$_SESSION['user_id'];
-Database::setUpConnection(); // Ensure connection is active
+// **FIX IS HERE:** Changed 'fname, lname' to 'name'
+$user_rs = Database::search("SELECT email, name FROM user WHERE id = $user_id");
+$user_data = $user_rs->fetch_assoc();
+$user_email = $user_data['email'];
+// **FIX IS HERE:** Use the single 'name' column
+$user_full_name = $user_data['name'] ?? 'Valued Customer';
 
-// --- 2. GET SELECTED ITEMS ---
-$selected_items = $_POST['selected_items'] ?? null;
-$cart_item_ids_sql = [];
-
-if ($selected_items && is_array($selected_items)) {
-    // Sanitize selected items
-    foreach ($selected_items as $item_id) {
-        $cart_item_ids_sql[] = (int)$item_id;
-    }
-}
-
-if (empty($cart_item_ids_sql)) {
-    // No items were submitted
-    header('Location: cart.php?error=no_selection');
+// Get selected cart items from the SESSION (set by checkout.php)
+if (!isset($_SESSION['checkout_items']) || empty($_SESSION['checkout_items'])) {
+    header('Location: cart.php?error=session_expired');
     exit;
 }
+$cart_item_ids = $_SESSION['checkout_items'];
+$cart_id_list = implode(',', $cart_item_ids);
 
-$cart_id_list = implode(',', $cart_item_ids_sql);
-$cart_id_where_clause = "AND c.id IN ($cart_id_list)";
+// Get all POST data and sanitize it
+// **FIX IS HERE:** Default 'fname' to the user's full name, 'lname' to empty
+$fname = $_POST['fname'] ?? $user_full_name;
+$lname = $_POST['lname'] ?? '';
+$address_line_1 = $_POST['address_line_1'] ?? '';
+$address_line_2 = $_POST['address_line_2'] ?? '';
+$province_id = (int)($_POST['province_id'] ?? 0);
+$district_id = (int)($_POST['district_id'] ?? 0);
+$city_id = (int)($_POST['city_id'] ?? 0);
+$zip_code = $_POST['zip_code'] ?? '';
+$shipping_fee = 500.00; // Same as checkout.php
 
-
-// --- 3. START DATABASE TRANSACTION ---
+// --- 3. DATABASE TRANSACTION ---
+// This is critical. All queries must succeed, or none will.
+Database::setUpConnection();
 Database::$connection->begin_transaction();
 
 try {
-    // --- 4. SAVE/UPDATE ADDRESS ---
-    
-    // Sanitize POST data
-    $address1 = Database::$connection->real_escape_string($_POST['address_line_1']);
-    $address2 = Database::$connection->real_escape_string($_POST['address_line_2']);
-    $zip = Database::$connection->real_escape_string($_POST['zip_code']);
-    $city_id = (int)$_POST['city_id']; // Get the ID directly
-
-    // Check if city ID is valid
-    if ($city_id <= 0) {
-        throw new Exception("Please select a valid city.");
-    }
-    
-    // Save/Update user_has_address
-    $sql = "INSERT INTO user_has_address (user_id, address_line_1, address_line_2, zip_code, city_id)
-            VALUES ($user_id, '$address1', '$address2', '$zip', $city_id)
-            ON DUPLICATE KEY UPDATE
-            address_line_1 = VALUES(address_line_1),
-            address_line_2 = VALUES(address_line_2),
-            zip_code = VALUES(zip_code),
-            city_id = VALUES(city_id)";
-    Database::iud($sql);
-    
-    // Get the ID of the address we just saved/updated
-    $address_id_rs = Database::search("SELECT id FROM user_has_address WHERE user_id = $user_id");
-    $user_address_id = $address_id_rs->fetch_assoc()['id'];
-    if (!$user_address_id) {
-        throw new Exception("Could not save or find user address.");
-    }
-    
-    // --- 5. PROCESS THE ORDER ---
-    
-    // Get *SELECTED* cart items
-    $cart_rs = Database::search("
-        SELECT c.id AS cart_id, c.product_id, c.qty, p.price, p.qty AS stock_qty
+    // --- 4. CHECK STOCK & GET ITEMS ---
+    $cart_items_rs = Database::search("
+        SELECT c.id AS cart_id, p.id AS product_id, p.title, p.price, p.qty AS stock_qty, c.qty AS order_qty
         FROM cart c
         JOIN product p ON c.product_id = p.id
-        WHERE c.user_id = $user_id $cart_id_where_clause
+        WHERE c.user_id = $user_id AND c.id IN ($cart_id_list)
     ");
     
-    if ($cart_rs->num_rows == 0) {
-        throw new Exception("Your selected items could not be found.");
+    if ($cart_items_rs->num_rows == 0) {
+        throw new Exception("No valid items found in your cart.");
     }
     
-    // Create a new unique Order ID
-    $order_id = 'FD-' . $user_id . '-' . time();
-    $status_id = 1; // 'Pending'
-    $created_at = date('Y-m-d H:i:s');
-    $shipping = 500.00; // Same as on checkout page
-    $subtotal = 0;
+    // Check stock levels *before* doing anything else
+    $items_to_process = [];
+    $total_order_amount = 0;
+    while ($item = $cart_items_rs->fetch_assoc()) {
+        if ($item['order_qty'] > $item['stock_qty']) {
+            throw new Exception("Not enough stock for: " . $item['title'] . ". Only " . $item['stock_qty'] . " available.");
+        }
+        $items_to_process[] = $item;
+        $total_order_amount += $item['price'] * $item['order_qty'];
+    }
+    
+    $grand_total = $total_order_amount + $shipping_fee;
 
-    $cart_items = [];
-    while ($item = $cart_rs->fetch_assoc()) {
-        $cart_items[] = $item;
-        $subtotal += $item['price'] * $item['qty'];
+    // --- 5. SAVE/UPDATE USER ADDRESS ---
+    $address_rs = Database::search("SELECT * FROM user_has_address WHERE user_id = $user_id");
+    if ($address_rs->num_rows == 1) {
+        $address_data = $address_rs->fetch_assoc();
+        $user_has_address_id = $address_data['id'];
+        Database::iud("
+            UPDATE user_has_address 
+            SET address_line_1 = '$address_line_1', address_line_2 = '$address_line_2', zip_code = '$zip_code', city_id = $city_id 
+            WHERE id = $user_has_address_id
+        ");
+    } else {
+        Database::iud("
+            INSERT INTO user_has_address (user_id, address_line_1, address_line_2, zip_code, city_id) 
+            VALUES ($user_id, '$address_line_1', '$address_line_2', '$zip_code', $city_id)
+        ");
+        $user_has_address_id = Database::$connection->insert_id;
+    }
+
+    // --- 6. GENERATE ORDER ID & SAVE INVOICE ITEMS ---
+    $order_id_string = "FLYD-" . time() . rand(100, 999);
+    $order_date = date('Y-m-d H:i:s');
+    
+    foreach ($items_to_process as $item) {
+        $product_id = $item['product_id'];
+        $order_qty = $item['order_qty'];
+        $unit_price = $item['price'];
+        $item_total = $unit_price * $order_qty;
+
+        // **TASK: UPDATE PRODUCT QTY IN DATABASE**
+        Database::iud("
+            UPDATE product 
+            SET qty = qty - $order_qty 
+            WHERE id = $product_id
+        ");
+
+        // **TASK: SAVE TO INVOICE TABLE**
+        Database::iud("
+            INSERT INTO invoice (order_id, product_id, user_has_address_id, created_at, qty, unit_price, total_amount, status_id) 
+            VALUES (
+                '$order_id_string', 
+                $product_id, 
+                $user_has_address_id, 
+                '$order_date', 
+                $order_qty, 
+                $unit_price, 
+                $item_total, 
+                1 
+            )
+        ");
+    }
+    
+    // --- 7. TASK: REMOVE FROM CART ---
+    Database::iud("
+        DELETE FROM cart 
+        WHERE user_id = $user_id AND id IN ($cart_id_list)
+    ");
+
+    // --- 8. COMMIT & CLEANUP ---
+    Database::$connection->commit();
+    unset($_SESSION['checkout_items']); // Clear the session
+    
+    // --- 9. TASK: SEND INVOICE EMAIL ---
+    if ($phpMailerInstalled) {
+        // We need to fetch the full invoice details to build the email
+        // We'll reuse the logic from invoice.php (but simplified)
+        $invoice_html = "<h1>Order Confirmation: $order_id_string</h1>";
+        $invoice_html .= "<p>Thank you for your order, $fname!</p>"; // This will use the full name
+        $invoice_html .= "<p>Your order will be shipped to: $address_line_1, $zip_code</p>";
+        $invoice_html .= "<table border='1' cellpadding='5' cellspacing='0'><tr><th>Product</th><th>Qty</th><th>Total</th></tr>";
         
-        // Check stock
-        if ($item['qty'] > $item['stock_qty']) {
-            throw new Exception("Not enough stock for product ID " . $item['product_id']);
+        foreach ($items_to_process as $item) {
+            $invoice_html .= "<tr>";
+            $invoice_html .= "<td>" . $item['title'] . "</td>";
+            $invoice_html .= "<td>" . $item['order_qty'] . "</td>";
+            $invoice_html .= "<td>LKR " . number_format($item['price'] * $item['order_qty'], 2) . "</td>";
+            $invoice_html .= "</tr>";
+        }
+        $invoice_html .= "</table>";
+        $invoice_html .= "<p>Subtotal: LKR " . number_format($total_order_amount, 2) . "</p>";
+        $invoice_html .= "<p>Shipping: LKR " . number_format($shipping_fee, 2) . "</p>";
+        $invoice_html .= "<h3>Total: LKR " . number_format($grand_total, 2) . "</h3>";
+        
+        // Send the email (this will fail if you don't set up credentials)
+        try {
+            $mail = new PHPMailer(true);
+            // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // Enable for debugging
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.example.com'; // **SET YOUR SMTP HOST**
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'you@example.com';  // **SET YOUR SMTP USERNAME**
+            $mail->Password   = 'your_password';    // **SET YOUR SMTP PASSWORD**
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            $mail->setFrom('contact@flydolk.com', 'FlyDolk');
+            // **FIX IS HERE:** This will use the full name from $fname and an empty $lname
+            $mail->addAddress($user_email, $fname . ' ' . $lname);
+            $mail->addReplyTo('contact@flydolk.com', 'FlyDolk');
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Your FlyDolk Order Confirmation (' . $order_id_string . ')';
+            $mail->Body    = $invoice_html;
+            $mail->AltBody = 'Your order has been placed. Order ID: ' . $order_id_string;
+
+            $mail->send();
+        } catch (Exception $e) {
+            // Email failed, but the order was still placed.
+            // We can log this error, but we don't stop the user.
+            error_log("Email (PHPMailer) failed to send: " . $mail->ErrorInfo);
         }
     }
-    
-    $grand_total = $subtotal + $shipping;
 
-    // Loop again to save to invoice and update stock
-    foreach ($cart_items as $item) {
-        $product_id = $item['product_id'];
-        $qty = $item['qty'];
-        $unit_price = $item['price'];
-        $total_amount = $unit_price * $qty;
-        
-        // Insert into invoice
-        $invoice_sql = "
-            INSERT INTO invoice (order_id, product_id, qty, unit_price, total_amount, user_has_address_id, status_id, created_at)
-            VALUES ('$order_id', $product_id, $qty, '$unit_price', '$total_amount', $user_address_id, $status_id, '$created_at')
-        ";
-        Database::iud($invoice_sql);
-        
-        // Update product stock
-        $stock_sql = "UPDATE product SET qty = qty - $qty WHERE id = $product_id";
-        Database::iud($stock_sql);
-    }
-    
-    // --- 6. CLEAR *ONLY THE PURCHASED ITEMS* FROM THE CART ---
-    Database::iud("DELETE FROM cart WHERE user_id = $user_id AND id IN ($cart_id_list)");
-    
-    // --- 7. COMMIT AND REDIRECT ---
-    Database::$connection->commit();
-    
-    // Redirect to success page
-    header('Location: order_success.php?order_id=' . $order_id);
+    // --- 10. REDIRECT TO SUCCESS ---
+    header('Location: order_success.php?order_id=' . $order_id_string);
     exit;
-    
+
 } catch (Exception $e) {
-    // Something went wrong, roll back changes
-    Database::$connection->rollback();
-    
-    // Redirect back to checkout with an error
-    // We can't post to checkout, so we redirect to cart with the error
-    header('Location: cart.php?error=' . urlencode($e->getMessage()));
+    // --- 11. HANDLE ERRORS ---
+    Database::$connection->rollback(); // Undo all changes
+    // Go back to checkout with the error message
+    header('Location: checkout.php?error=' . urlencode($e->getMessage()));
     exit;
 }
 ?>
