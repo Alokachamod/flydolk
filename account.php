@@ -183,7 +183,7 @@ if ($address['district_id']) {
                                 <input type="file" id="profile-image-input" name="profile_image" accept="image/png, image/jpeg">
                             </div>
                             <div>
-                                <button type="submit" class="btn btn-primary" id="upload-image-btn" style="display: none;">
+                                <button type="submit" class="btn btn-primary" id="upload-image-btn" style="display: none; ">
                                     <span class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
                                     Upload Image
                                 </button>
