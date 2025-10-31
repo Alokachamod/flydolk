@@ -76,6 +76,15 @@
         .notification-item.unread {
             background-color: #f8f9fa;
         }
+        
+        /* [NEW] Notification Badge Style */
+        .nav-link .badge {
+            font-size: 0.6rem;
+            padding: 0.25em 0.45em;
+            position: absolute;
+            top: 4px;
+            right: -4px;
+        }
     </style>
 </head>
 <body>
@@ -85,7 +94,7 @@
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
                 <!-- Logo -->
-                <a class="navbar-brand" href="dashboard.html">flydolk</a>
+                <a class="navbar-brand" href="admin-dashboard.php">flydolk</a>
 
                 <!-- Responsive Toggle Button -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,6 +123,8 @@
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="admin-subManagement.php">Product Attributes</a></li>
                                 <li><a class="dropdown-item" href="admin-panelManagement.php">Admin Panel</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="admin-reports.php">Reports</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -121,48 +132,36 @@
                 
                 <!-- Right Side Icons -->
                 <div class="d-flex align-items-center gap-3">
-                    <a href="#" class="nav-link"><i class="bi bi-chat-dots header-icon"></i></a>
                     
                     <!-- Notification Dropdown -->
                     <div class="dropdown">
-                         <a href="#" class="nav-link dropdown-toggle" id="notificationDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bell header-icon"></i>
+                         <a href="#" class="nav-link dropdown-toggle position-relative" id="notificationDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell header-icon" id="notificationBell"></i>
+                            <!-- [NEW] Badge for unread count -->
+                            <span id="notificationBadge" class="badge rounded-pill bg-danger d-none"></span>
                          </a>
-                         <ul class="dropdown-menu dropdown-menu-end p-2 notification-dropdown" aria-labelledby="notificationDropdownLink">
+                         <ul class="dropdown-menu dropdown-menu-end p-2 notification-dropdown" aria-labelledby="notificationDropdownLink" id="notificationList">
+                             
+                             <!-- Header -->
                              <li class="px-2 py-1">
                                  <h6 class="fw-bold mb-0">Notifications</h6>
                              </li>
                              <li><hr class="dropdown-divider"></li>
                              
-                             <!-- Notification Item -->
-                             <li class="notification-item p-2 d-flex align-items-start unread">
-                                <div class="icon text-success me-3 pt-1"><i class="bi bi-box-seam-fill"></i></div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-1"><strong>New Order:</strong> #ORD-00452 has been placed by John Doe.</p>
-                                    <small class="text-muted">15 minutes ago</small>
+                             <!-- [NEW] Content will be injected by JavaScript -->
+                             <li class="notification-item p-3 text-center text-muted d-none" id="noNotifications">
+                                No new notifications
+                             </li>
+                             
+                             <li class="notification-item p-3 text-center" id="notificationLoader">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
-                            </li>
-
-                            <!-- Notification Item -->
-                            <li class="notification-item p-2 d-flex align-items-start unread">
-                                <div class="icon text-warning me-3 pt-1"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-1"><strong>Low Stock Alert:</strong> "DJI Mavic 3 Propellers" has only 5 items left.</p>
-                                    <small class="text-muted">1 hour ago</small>
-                                </div>
-                            </li>
-
-                             <!-- Notification Item -->
-                            <li class="notification-item p-2 d-flex align-items-start">
-                                <div class="icon text-primary me-3 pt-1"><i class="bi bi-person-plus-fill"></i></div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-1"><strong>New User:</strong> Jane Smith has registered an account.</p>
-                                    <small class="text-muted">3 hours ago</small>
-                                </div>
-                            </li>
-                            
+                             </li>
+                             
+                             <!-- Footer -->
                              <li><hr class="dropdown-divider"></li>
-                             <li><a class="dropdown-item text-center text-primary" href="notifications.html">View All Notifications</a></li>
+                             <li><a class="dropdown-item text-center text-primary" href="#">View All Notifications</a></li>
                          </ul>
                     </div>
                 </div>
@@ -178,14 +177,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             
-            const currentPage = 'dashboard.html';
-            const managementPages = ['management.html', 'admin-management.html'];
+            // --- 1. Active Page Link Logic ---
+            const currentPage = window.location.pathname.split('/').pop();
+            const managementPages = ['admin-subManagement.php', 'admin-panelManagement.php', 'admin-reports.php'];
             
             const mainNavLinks = document.querySelectorAll('#adminNavbar .nav-link');
             const managementDropdownToggle = document.querySelector('#adminNavbar .dropdown-toggle');
 
             mainNavLinks.forEach(link => {
-                // Check if it's not a dropdown toggle
                 if (!link.classList.contains('dropdown-toggle')) {
                     const linkPage = link.getAttribute('href');
                     if (linkPage === currentPage) {
@@ -198,6 +197,62 @@
             if (managementPages.includes(currentPage)) {
                 managementDropdownToggle.classList.add('active');
             }
+            
+            // --- 2. [NEW] Notification Fetch Logic ---
+            const notificationList = document.getElementById('notificationList');
+            const notificationBadge = document.getElementById('notificationBadge');
+            const loader = document.getElementById('notificationLoader');
+            const noNotifications = document.getElementById('noNotifications');
+            
+            async function fetchNotifications() {
+                try {
+                    const response = await fetch('admin-getNotifications.php');
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        loader.classList.add('d-none'); // Hide loader
+                        
+                        // Set badge count
+                        if (data.unread_count > 0) {
+                            notificationBadge.textContent = data.unread_count;
+                            notificationBadge.classList.remove('d-none');
+                        }
+                        
+                        // Populate notification list
+                        if (data.notifications.length > 0) {
+                            data.notifications.forEach(noti => {
+                                const itemHTML = `
+                                <li class="notification-item p-2 d-flex align-items-start unread">
+                                    <div class="icon ${noti.color} me-3 pt-1"><i class="bi ${noti.icon}"></i></div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1"><strong>${noti.title}:</strong> ${noti.message}</p>
+                                        <small class="text-muted">${noti.time}</small>
+                                    </div>
+                                </li>
+                                `;
+                                // Insert *before* the first divider
+                                notificationList.querySelector('hr').insertAdjacentHTML('beforebegin', itemHTML);
+                            });
+                        } else {
+                            // Show "No notifications" message
+                            noNotifications.classList.remove('d-none');
+                        }
+                    } else {
+                        throw new Error(data.error || 'Failed to load notifications.');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                    loader.innerHTML = '<span class="text-danger small p-2">Could not load</span>';
+                }
+            }
+            
+            // Fetch notifications when the page loads
+            fetchNotifications();
         });
     </script>
 </body>

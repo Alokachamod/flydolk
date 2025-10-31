@@ -1,6 +1,99 @@
+<?php
+session_start();
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: admin-login.php");
+    exit();
+}
+include 'connection.php';
+
+// --- 1. KPI Card Data ---
+
+// Total Revenue (Only from completed/delivered/shipped orders)
+$revenue_rs = Database::search("
+    SELECT SUM(i.total_amount) AS total_revenue 
+    FROM invoice i 
+    JOIN status s ON i.status_id = s.id 
+    WHERE s.name IN ('Completed', 'Delivered', 'Shipped')
+");
+$revenue_data = $revenue_rs->fetch_assoc();
+$total_revenue = $revenue_data['total_revenue'] ?? 0;
+
+// Total Orders (Unique)
+$orders_rs = Database::search("SELECT COUNT(DISTINCT order_id) AS total_orders FROM invoice WHERE order_id IS NOT NULL AND order_id != ''");
+$orders_data = $orders_rs->fetch_assoc();
+$total_orders = $orders_data['total_orders'] ?? 0;
+
+// Total Customers
+$users_rs = Database::search("SELECT COUNT(id) AS total_users FROM user");
+$users_data = $users_rs->fetch_assoc();
+$total_users = $users_data['total_users'] ?? 0;
+
+// Pending Orders (Unique)
+$pending_rs = Database::search("
+    SELECT COUNT(DISTINCT i.order_id) AS pending_orders 
+    FROM invoice i 
+    JOIN status s ON i.status_id = s.id 
+    WHERE s.name = 'Pending' AND i.order_id IS NOT NULL AND i.order_id != ''
+");
+$pending_data = $pending_rs->fetch_assoc();
+$total_pending = $pending_data['pending_orders'] ?? 0;
 
 
+// --- 2. Chart Data (Sales This Year) ---
+$sales_rs = Database::search("
+    SELECT 
+        MONTH(created_at) AS month_num,
+        SUM(total_amount) AS monthly_sales
+    FROM invoice
+    WHERE YEAR(created_at) = YEAR(CURDATE())
+    GROUP BY MONTH(created_at)
+    ORDER BY month_num ASC;
+");
 
+// Initialize 12 months with 0 sales
+$chart_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+$chart_data = array_fill(0, 12, 0);
+
+if ($sales_rs) {
+    while ($row = $sales_rs->fetch_assoc()) {
+        $month_index = (int)$row['month_num'] - 1; // 1 (Jan) becomes 0
+        $chart_data[$month_index] = (float)$row['monthly_sales'];
+    }
+}
+
+// Convert PHP arrays to JSON for JavaScript
+$chart_labels_json = json_encode($chart_labels);
+$chart_data_json = json_encode($chart_data);
+
+// --- 3. Recent Orders Table Data ---
+$recent_orders_rs = Database::search("
+    SELECT 
+        i.order_id, 
+        MAX(i.created_at) AS created_at, 
+        SUM(i.total_amount) AS total, 
+        MAX(s.name) AS status_name,
+        MAX(u.name) AS customer_name
+    FROM invoice i
+    LEFT JOIN `status` s ON i.status_id = s.id
+    LEFT JOIN user_has_address uha ON i.user_has_address_id = uha.id
+    LEFT JOIN user u ON uha.user_id = u.id
+    WHERE i.order_id IS NOT NULL AND i.order_id != ''
+    GROUP BY i.order_id
+    ORDER BY MAX(i.created_at) DESC
+    LIMIT 5;
+");
+
+// Status badge classes (from orderManagement page)
+$status_classes = [
+    'pending' => 'bg-warning text-dark',
+    'processing' => 'bg-info text-dark',
+    'shipped' => 'bg-primary',
+    'delivered' => 'bg-success',
+    'completed' => 'bg-success',
+    'cancelled' => 'bg-danger',
+    'refunded' => 'bg-secondary',
+];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +123,12 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8f9fa; /* Light gray background */
             color: #212529;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
+        main { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
 
         .kpi-card {
             background-color: #ffffff;
@@ -77,12 +175,15 @@
         .table-card .table th {
             font-weight: 600;
         }
+        .table-card .table td {
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header>
-        <?php include 'admin-header.php'; ?>
+        <?php include 'admin-Header.php'; ?>
     </header>
     
     <!-- Main Dashboard Content -->
@@ -91,9 +192,10 @@
         <!-- Dashboard Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2 fw-bold">Dashboard</h1>
-            <button class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#createReportModal">
-                <i class="bi bi-plus-circle me-2"></i> Create Report
-            </button>
+            <!-- [FIX] Changed this from a modal button to a link to the new reports page -->
+            <a href="admin-reports.php" class="btn btn-primary d-flex align-items-center">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i> Generate Reports
+            </a>
         </div>
 
         <!-- KPI Cards Row -->
@@ -103,7 +205,7 @@
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-uppercase">Total Revenue</h6>
-                            <p class="card-text fs-2">$48,329</p>
+                            <p class="card-text fs-2">LKR <?php echo number_format($total_revenue, 2); ?></p>
                         </div>
                         <div class="icon-bg bg-success-light">
                             <i class="bi bi-cash-stack fs-2 text-success-light"></i>
@@ -116,7 +218,7 @@
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-uppercase">Orders</h6>
-                            <p class="card-text fs-2">1,204</p>
+                            <p class="card-text fs-2"><?php echo number_format($total_orders); ?></p>
                         </div>
                         <div class="icon-bg bg-primary-light">
                             <i class="bi bi-box-seam fs-2 text-primary-light"></i>
@@ -129,7 +231,7 @@
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-uppercase">Customers</h6>
-                            <p class="card-text fs-2">351</p>
+                            <p class="card-text fs-2"><?php echo number_format($total_users); ?></p>
                         </div>
                         <div class="icon-bg bg-warning-light">
                             <i class="bi bi-people fs-2 text-warning-light"></i>
@@ -142,7 +244,7 @@
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-uppercase">Pending</h6>
-                            <p class="card-text fs-2">12</p>
+                            <p class="card-text fs-2"><?php echo number_format($total_pending); ?></p>
                         </div>
                         <div class="icon-bg bg-danger-light">
                             <i class="bi bi-hourglass-split fs-2 text-danger-light"></i>
@@ -158,7 +260,7 @@
             <div class="col-lg-7">
                 <div class="chart-card card border-0 h-100">
                     <div class="card-header bg-white border-0 pt-3">
-                        <h5 class="card-title fw-bold">Sales Overview</h5>
+                        <h5 class="card-title fw-bold">Sales Overview (This Year)</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="salesChart"></canvas>
@@ -175,27 +277,41 @@
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="p-3">Order ID</th>
+                                        <th class="p-3">Customer</th>
+                                        <th class="p-3">Total</th>
+                                        <th class="p-3">Status</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
+                                    <?php
+                                    if ($recent_orders_rs && $recent_orders_rs->num_rows > 0) {
+                                        while ($row = $recent_orders_rs->fetch_assoc()) {
+                                            $status_name = strtolower(htmlspecialchars($row['status_name'] ?? 'N/A'));
+                                            $badge_class = $status_classes[$status_name] ?? 'bg-light text-dark';
+                                    ?>
                                     <tr>
-                                        <td class="p-3"><div class="d-flex align-items-center"><i class="bi bi-circle-fill text-success me-3"></i><div><div class="fw-bold">#ORD-00452</div><small class="text-muted">DJI Mavic 3 Pro</small></div></div></td>
-                                        <td class="text-end fw-bold p-3">$2,199.00</td>
+                                        <td class="p-3 fw-bold">
+                                            <a href="admin-orderManagement.php" class="text-decoration-none">
+                                                <?php echo htmlspecialchars($row['order_id']); ?>
+                                            </a>
+                                        </td>
+                                        <td class="p-3"><?php echo htmlspecialchars($row['customer_name'] ?? 'Unknown User'); ?></td>
+                                        <td class="p-3">LKR <?php echo number_format($row['total'], 2); ?></td>
+                                        <td class="p-3">
+                                            <span class="badge <?php echo $badge_class; ?>">
+                                                <?php echo htmlspecialchars($row['status_name'] ?? 'N/A'); ?>
+                                            </span>
+                                        </td>
                                     </tr>
-                                    <tr>
-                                        <td class="p-3"><div class="d-flex align-items-center"><i class="bi bi-circle-fill text-success me-3"></i><div><div class="fw-bold">#ORD-00451</div><small class="text-muted">Autel EVO II</small></div></div></td>
-                                        <td class="text-end fw-bold p-3">$1,750.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-3"><div class="d-flex align-items-center"><i class="bi bi-circle-fill text-warning me-3"></i><div><div class="fw-bold">#ORD-00450</div><small class="text-muted">Parrot Anafi</small></div></div></td>
-                                        <td class="text-end fw-bold p-3">$699.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-3"><div class="d-flex align-items-center"><i class="bi bi-circle-fill text-danger me-3"></i><div><div class="fw-bold">#ORD-00449</div><small class="text-muted">Skydio 2+</small></div></div></td>
-                                        <td class="text-end fw-bold p-3">$1,099.00</td>
-                                    </tr>
-                                     <tr>
-                                        <td class="p-3"><div class="d-flex align-items-center"><i class="bi bi-circle-fill text-success me-3"></i><div><div class="fw-bold">#ORD-00448</div><small class="text-muted">DJI Mini 3</small></div></div></td>
-                                        <td class="text-end fw-bold p-3">$759.00</td>
-                                    </tr>
+                                    <?php
+                                        } // end while
+                                    } else {
+                                        echo '<tr><td colspan="4" class="p-3 text-center text-muted">No recent orders found.</td></tr>';
+                                    }
+                                    ?>
                                 </tbody>
                             </table>
                         </div>
@@ -205,53 +321,8 @@
         </div>
     </main>
     
-    <!-- Create Report Modal -->
-    <div class="modal fade" id="createReportModal" tabindex="-1" aria-labelledby="createReportModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createReportModalLabel">Create New Report</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="reportType" class="form-label">Report Type</label>
-                            <select class="form-select" id="reportType">
-                                <option selected>Choose report type...</option>
-                                <option value="sales">Sales Report</option>
-                                <option value="inventory">Inventory Report</option>
-                                <option value="customers">Customer Report</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="dateRange" class="form-label">Date Range</label>
-                            <select class="form-select" id="dateRange">
-                                <option selected>Choose date range...</option>
-                                <option value="7">Last 7 Days</option>
-                                <option value="30">Last 30 Days</option>
-                                <option value="90">Last 90 Days</option>
-                                <option value="custom">Custom Range</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="exportFormat" class="form-label">Export Format</label>
-                            <select class="form-select" id="exportFormat">
-                                <option selected>Choose format...</option>
-                                <option value="pdf">PDF</option>
-                                <option value="csv">CSV</option>
-                                <option value="excel">Excel</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Generate Report</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- [FIX] Removed the placeholder "Create Report Modal" as it is now a separate page -->
+    
     <!-- Footer -->
      <footer>
         <?php
@@ -268,10 +339,10 @@
         const salesChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                labels: <?php echo $chart_labels_json; ?>, // Inject PHP data
                 datasets: [{
                     label: 'Sales',
-                    data: [12000, 19000, 15000, 21000, 18000, 25000, 22000],
+                    data: <?php echo $chart_data_json; ?>, // Inject PHP data
                     backgroundColor: 'rgba(13, 110, 253, 0.1)',
                     borderColor: 'rgba(13, 110, 253, 1)',
                     borderWidth: 2,
@@ -286,13 +357,57 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    // Format as currency
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'LKR' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#e9ecef' } },
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#e9ecef' },
+                        ticks: {
+                            callback: function(value, index, ticks) {
+                                // Format Y-axis as currency
+                                return 'LKR ' + value.toLocaleString();
+                            }
+                        }
+                    },
                     x: { grid: { display: false } }
                 }
+            }
+        });
+
+        // [NEW] Set default dates in the modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const dateToEl = document.getElementById('dateTo');
+            const dateFromEl = document.getElementById('dateFrom');
+
+            if(dateToEl) {
+                dateToEl.value = today;
+            }
+            if(dateFromEl) {
+                // Default to 30 days ago
+                const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                dateFromEl.value = thirtyDaysAgo;
             }
         });
     </script>
 </body>
 </html>
+
+

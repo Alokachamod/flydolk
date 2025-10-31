@@ -101,7 +101,7 @@
 
     <!-- Bottom strip -->
     <div class="fd-bottom d-flex align-items-center gap-3 mt-3 pt-3">
-      <p class="m-0">© <span id="fd-year"></span> FLYDOLK. All rights reserved.</p>
+      <p class="m-0">© <span id="fd-year"></span> FLYDOLK. All rights reserved. | Developed By <a href="https://www.alokadev.dev" style="text-decoration: none; color:green">Aloka Dev</a></p>
       <button class="fd-thruster ms-auto" onclick="fdBackToTop()" aria-label="Back to top">
         <i class="fa-solid fa-jet-fighter-up"></i>
       </button>

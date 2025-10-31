@@ -73,7 +73,7 @@ if ($product_rs->num_rows == 1) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $product_data ? htmlspecialchars($product_data['title']) : 'Product Not Found'; ?> - FlyDolk</title>
-    
+    <link rel="icon" href="imgs/Flydo.png">
     <!-- Bootstrap CSS CDN -->
      <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
