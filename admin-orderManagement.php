@@ -90,48 +90,49 @@ include 'connection.php';
                                 'refunded' => 'bg-secondary',
                             ];
 
-                            // [FIX] Changed 'order_status s' back to 'status s'
-                            $main_order_sql = "
+                            // [FIX] Wrapped s.name and u.name in MAX() to solve the only_full_group_by error
+                            $rs = Database::search("
                                 SELECT 
-                                    i.id, 
-                                    i.created_at, 
-                                    i.total_amount, 
-                                    s.name AS status_name,
-                                    u.name AS customer_name
+                                    i.order_id, 
+                                    MAX(i.created_at) AS created_at, 
+                                    SUM(i.total_amount) AS total, 
+                                    MAX(s.name) AS status_name,
+                                    MAX(u.name) AS customer_name
                                 FROM invoice i
-                                JOIN `status` s ON i.status_id = s.id
-                                JOIN user_has_address uha ON i.user_has_address_id = uha.id
-                                JOIN user u ON uha.user_id = u.id
-                                ORDER BY i.id DESC
-                            ";
-                            $rs = Database::search($main_order_sql);
-
-                            // [FIX] Add check for query failure
+                                LEFT JOIN `status` s ON i.status_id = s.id
+                                LEFT JOIN user_has_address uha ON i.user_has_address_id = uha.id
+                                LEFT JOIN user u ON uha.user_id = u.id
+                                GROUP BY i.order_id
+                                ORDER BY MAX(i.order_id) DESC
+                            ");
+                            
                             if (!$rs) {
-                                echo '<tr><td colspan="6" class="p-3 text-danger">Error loading orders. Query failed.</td></tr>';
+                                echo '<tr><td colspan="6" class="p-3 text-danger">Error loading orders. Check database query.</td></tr>';
                             } else {
                                 while ($row = $rs->fetch_assoc()) {
-                                    $status_name = strtolower(htmlspecialchars($row['status_name']));
-                                    // Get the badge class, or use 'bg-light text-dark' as a default
+                                    $status_name = strtolower(htmlspecialchars($row['status_name'] ?? 'N/A'));
+                                    $order_id_str = htmlspecialchars($row['order_id']); // Safe string for HTML
                                     $badge_class = $status_classes[$status_name] ?? 'bg-light text-dark';
-                            ?>
-                                <tr>
-                                    <td class="p-3 fw-bold">#<?php echo htmlspecialchars($row['id']); ?></td>
-                                    <td class="p-3"><?php echo htmlspecialchars($row['customer_name']); ?></td>
-                                    <td class="p-3"><?php echo date("M j, Y, g:i A", strtotime($row['created_at'])); ?></td>
-                                    <td class="p-3">LKR <?php echo number_format($row['total_amount'], 2); ?></td>
-                                    <td class="p-3">
-                                        <span class="badge <?php echo $badge_class; ?>" id="status-badge-<?php echo $row['id']; ?>">
-                                            <?php echo htmlspecialchars($row['status_name']); ?>
-                                        </span>
-                                    </td>
-                                    <td class="p-3 text-end">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" 
-                                            onclick="openOrderModal(<?php echo $row['id']; ?>)">
-                                            <i class="bi bi-eye-fill"></i> View Details
-                                        </button>
-                                    </td>
-                                </tr>
+                                ?>
+                                    <tr>
+                                        <td class="p-3 fw-bold"><?php echo $order_id_str; ?></td>
+                                        <td class="p-3"><?php echo htmlspecialchars($row['customer_name'] ?? 'Unknown User'); ?></td>
+                                        <td class="p-3"><?php echo date("M j, Y, g:i A", strtotime($row['created_at'])); ?></td>
+                                        <td class="p-3">LKR <?php echo number_format($row['total'], 2); ?></td>
+                                        <td class="p-3">
+                                            <!-- [FIX] Use the escaped string ID -->
+                                            <span class="badge <?php echo $badge_class; ?>" id="status-badge-<?php echo $order_id_str; ?>">
+                                                <?php echo htmlspecialchars($row['status_name'] ?? 'N/A'); ?>
+                                            </span>
+                                        </td>
+                                        <td class="p-3 text-end">
+                                            <!-- [FIX] Pass the order ID as a STRING by wrapping in single quotes -->
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="openOrderModal('<?php echo addslashes($row['order_id']); ?>')">
+                                                <i class="bi bi-eye-fill"></i> View Details
+                                            </button>
+                                        </td>
+                                    </tr>
                             <?php 
                                 } // end while
                             } // end else
@@ -253,13 +254,17 @@ include 'connection.php';
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="script.js"></script>
+    <!-- Your script.js file, if it exists -->
+    <!-- <script src="script.js"></script> --> 
 
     <script>
         // Store modal instance
         let orderModal = null;
         document.addEventListener('DOMContentLoaded', () => {
-            orderModal = new bootstrap.Modal(document.getElementById('viewOrderModal'));
+            const modalEl = document.getElementById('viewOrderModal');
+            if (modalEl) {
+                 orderModal = new bootstrap.Modal(modalEl);
+            }
         });
 
         // Helper to format currency
@@ -269,88 +274,88 @@ include 'connection.php';
                 maximumFractionDigits: 2
             });
         }
+        
+        // Helper for safely setting text content
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = text || 'N/A'; // Default to 'N/A' if text is null/empty
+            }
+        }
 
         /**
          * This function is called when you click "View Details".
          * It fetches data from your `admin-getOrderDetails.php` file.
          */
-        async function openOrderModal(orderId) {
+        async function openOrderModal(orderId) { // orderId is now a STRING
+            if (!orderModal) return;
+            
             // Show the modal
             orderModal.show();
 
             // Show loader, hide content
             document.getElementById('modalLoader').classList.remove('d-none');
-            document.getElementById('modalLoader').innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'; // Reset loader
             document.getElementById('modalContent').classList.add('d-none');
             document.getElementById('updateStatusBtn').disabled = true;
 
             const formData = new FormData();
-            formData.append('order_id', orderId);
-
-            let data; // Define data outside try block
+            formData.append('order_id', orderId); // Pass the string ID
 
             try {
-                // [FIX] Start of the one and only try block
                 const response = await fetch('admin-getOrderDetails.php', {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                // Try to parse the JSON
-                data = await response.json();
-
-                // --- We only get here if the JSON was valid ---
-
-                if (!data.ok) {
-                    // [FIX] Show the detailed error from the PHP file
-                    let errorMsg = data.error || 'Failed to fetch order details.';
-                    if (data.debug_query) {
-                        errorMsg += `<br><small class="text-muted">Query: ${data.debug_query}</small>`;
-                    }
-                    
-                    orderModal.hide(); // Hide the broken modal
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Failed to Load Details',
-                        html: errorMsg,
-                    });
-                    return; // Stop execution
+                // Try to parse JSON regardless of response.ok
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    // This catches the "Unexpected token '<'" error
+                    console.error("Invalid JSON response:", text);
+                    // [FIX] This error will now show the actual HTML error from PHP
+                    throw new Error(`The server returned an error (is not valid JSON). Check console for the full response.`);
                 }
 
-                // --- Populate Modal Content (still inside the try block) ---
+
+                if (!response.ok || !data.ok) {
+                    // This handles JSON errors like "Order not found"
+                    throw new Error(data.error || 'Failed to fetch order details.');
+                }
+
+                // --- Populate Modal Content ---
                 const order = data.order;
                 const address = data.address;
                 const items = data.items;
                 const allStatuses = data.all_statuses;
 
                 // 1. Order Details
-                document.getElementById('viewOrderModalLabel').textContent = `Order Details #${order.id}`;
+                setText('viewOrderModalLabel', `Order Details #${order.id}`);
                 document.getElementById('modalOrderId').value = order.id;
 
                 // 2. Customer
-                document.getElementById('modalCustomerName').textContent = order.customer_name;
-                document.getElementById('modalCustomerEmail').textContent = order.customer_email;
-                document.getElementById('modalCustomerMobile').textContent = order.customer_mobile;
+                setText('modalCustomerName', order.customer_name);
+                setText('modalCustomerEmail', order.customer_email);
+                setText('modalCustomerMobile', order.customer_mobile);
 
                 // 3. Address
-                document.getElementById('modalAddress1').textContent = address.line1;
-                document.getElementById('modalAddress2').textContent = address.line2 || '';
-                document.getElementById('modalCity').textContent = address.city;
-                document.getElementById('modalProvince').textContent = address.province;
-                document.getElementById('modalDistrict').textContent = address.district;
-                document.getElementById('modalZip').textContent = address.zip_code;
+                setText('modalAddress1', address.line1);
+                setText('modalAddress2', address.line2);
+                const address2El = document.getElementById('modalAddress2');
+                if (address2El) {
+                     address2El.style.display = address.line2 ? 'block' : 'none';
+                }
+                setText('modalCity', address.city);
+                setText('modalProvince', address.province);
+                setText('modalDistrict', address.district);
+                setText('modalZip', address.zip_code);
                 
-                // Hide address line 2 if it's empty
-                document.getElementById('modalAddress2').style.display = address.line2 ? 'block' : 'none';
-
                 // 4. Totals
-                document.getElementById('modalSubtotal').textContent = formatPrice(order.subtotal);
-                document.getElementById('modalShipping').textContent = formatPrice(order.delivery_fee);
-                document.getElementById('modalTotal').textContent = formatPrice(order.total);
+                setText('modalSubtotal', formatPrice(order.subtotal));
+                setText('modalShipping', formatPrice(order.delivery_fee));
+                setText('modalTotal', formatPrice(order.total));
 
                 // 5. Items Table
                 const itemsTableBody = document.getElementById('modalOrderItemsTable');
@@ -358,13 +363,13 @@ include 'connection.php';
                 items.forEach(item => {
                     const row = `
                         <tr>
-                            <td><img src="${item.img || 'https://placehold.co/100x100/EBF5FF/0D6EFD?text=IMG'}" class="item-image" alt="${item.title}"></td>
+                            <td><img src="${item.img || 'https://placehold.co/100x100/eee/ccc?text=No+Img'}" class="item-image" alt="${item.title}"></td>
                             <td>
                                 <span class="fw-bold d-block">${item.title}</span>
-                                <small class="text-muted">Price: ${formatPrice(item.price)}</small>
+                                <small class="text-muted">Price: ${formatPrice(item.unit_price)}</small>
                             </td>
                             <td class="text-muted">x ${item.qty}</td>
-                            <td class="fw-bold text-end">${formatPrice(item.price * item.qty)}</td>
+                            <td class="fw-bold text-end">${formatPrice(item.total_amount)}</td>
                         </tr>
                     `;
                     itemsTableBody.insertAdjacentHTML('beforeend', row);
@@ -374,15 +379,14 @@ include 'connection.php';
                 const statusSelect = document.getElementById('modalStatusSelect');
                 statusSelect.innerHTML = ''; // Clear old options
                 
-                // Get the current status ID from the order data (thanks to our update)
-                const currentStatusId = order.status_id;
+                let currentStatusId = order.status_id;
                 document.getElementById('modalCurrentStatusId').value = currentStatusId;
                 
                 allStatuses.forEach(status => {
                     const option = document.createElement('option');
                     option.value = status.id;
                     option.textContent = status.name;
-                    if (status.id == currentStatusId) { // Compare by ID
+                    if (status.id == currentStatusId) {
                         option.selected = true;
                     }
                     statusSelect.appendChild(option);
@@ -395,20 +399,17 @@ include 'connection.php';
                 document.getElementById('updateStatusBtn').disabled = false;
 
 
-            } catch (error) { // [FIX] This is now the one and only catch block
-                // [FIX] If parsing fails (like "Unexpected token <"),
-                // or if the fetch fails, show a SweetAlert and close the modal.
-                console.error('Error fetching order details:', error);
-                orderModal.hide(); // Hide the broken modal
+            } catch (error) {
+                // [FIX] This single catch block now handles all errors
+                console.error('Error in openOrderModal:', error);
+                orderModal.hide(); // Hide the spinning modal
+                // Show the SweetAlert error
                 Swal.fire({
                     icon: 'error',
                     title: 'Failed to Load Details',
-                    html: `The server returned an error: <br><pre style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">${error.message}</pre>`,
+                    text: error.message,
                 });
-                return; // Stop execution
             }
-            
-            // [FIX] Removed the stray catch block that was here.
         }
 
         /**
@@ -416,7 +417,8 @@ include 'connection.php';
          * It sends data to your `admin-updateOrderStatus.php` file.
          */
         async function updateOrderStatus() {
-            const orderId = document.getElementById('modalOrderId').value;
+            // [FIX] This script needs to update the status for *all items* with this `order_id`
+            const orderId = document.getElementById('modalOrderId').value; // This is now a STRING
             const newStatusId = document.getElementById('modalStatusSelect').value;
             const newStatusName = document.getElementById('modalStatusSelect').options[document.getElementById('modalStatusSelect').selectedIndex].text;
             
@@ -425,7 +427,7 @@ include 'connection.php';
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
 
             const formData = new FormData();
-            formData.append('order_id', orderId);
+            formData.append('order_id', orderId); // Pass the string ID
             formData.append('status_id', newStatusId);
 
             try {
@@ -434,7 +436,14 @@ include 'connection.php';
                     body: formData
                 });
 
-                const data = await response.json();
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("Invalid JSON from updateStatus:", text);
+                    throw new Error("Server returned an invalid response.");
+                }
 
                 if (!data.ok) {
                     throw new Error(data.error || 'Failed to update status.');
@@ -454,8 +463,6 @@ include 'connection.php';
                 const badge = document.getElementById(`status-badge-${orderId}`);
                 if (badge) {
                     badge.textContent = newStatusName;
-                    // You can also update the badge color here if needed
-                    // This requires a map of status names to badge classes, just like in the PHP
                     const statusClasses = {
                         'pending': 'bg-warning text-dark',
                         'processing': 'bg-info text-dark',
@@ -467,6 +474,11 @@ include 'connection.php';
                     };
                     badge.className = `badge ${statusClasses[newStatusName.toLowerCase()] || 'bg-light text-dark'}`;
                 }
+
+                // Reload the main table to show correct list
+                setTimeout(() => {
+                    location.reload();
+                }, 1500); // Reload after 1.5 seconds
 
             } catch (error) {
                 Swal.fire({
