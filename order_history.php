@@ -20,7 +20,7 @@ $orders_rs = Database::search("
         SUM(i.total_amount) AS total_amount,
         (SELECT p.title FROM invoice inv JOIN product p ON inv.product_id = p.id WHERE inv.order_id = i.order_id LIMIT 1) AS first_product_title,
         (SELECT MIN(pi.img_url) FROM invoice inv JOIN product p ON inv.product_id = p.id JOIN product_img pi ON p.id = pi.product_id WHERE inv.order_id = i.order_id) AS first_product_image,
-        COUNT(i.id) AS item_count
+        COUNT(i.order_id) AS item_count
     FROM invoice i
     JOIN status s ON i.status_id = s.id
     JOIN user_has_address uha ON i.user_has_address_id = uha.id
