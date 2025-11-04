@@ -71,10 +71,10 @@
         <div class="fd-col h-100 rounded-3 p-3">
           <h4 class="h6">Support</h4>
           <ul class="fd-links list-unstyled m-0">
-            <li><a href="/faq.php" class="fx">FAQs</a></li>
-            <li><a href="/shipping-returns.php" class="fx">Shipping & Returns</a></li>
-            <li><a href="/privacy.php" class="fx">Privacy Policy</a></li>
-            <li><a href="/terms.php" class="fx">Terms & Conditions</a></li>
+            <li><a href="faq.php" class="fx">FAQs</a></li>
+            <li><a href="shipping-returns.php" class="fx">Shipping & Returns</a></li>
+            <li><a href="privacy.php" class="fx">Privacy Policy</a></li>
+            <li><a href="terms.php" class="fx">Terms & Conditions</a></li>
           </ul>
         </div>
       </nav>
