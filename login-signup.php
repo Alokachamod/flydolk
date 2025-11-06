@@ -307,6 +307,7 @@
     <div class="login-container" id="container">
         <!-- Sign Up Form -->
         <div class="form-container sign-up-container">
+            <!-- Your existing sign-up form -->
             <form action="#">
                 <h1>Create Account</h1>
                 <br>
@@ -321,21 +322,23 @@
                 <input type="email" placeholder="Email" id="email" />
                 <input type="password" placeholder="Password" id="password" />
                 <input type="tel" placeholder="Mobile" id="mobile" />
-                <button onclick="signUp();">Sign Up</button>
+                <button type="button" onclick="signUp();">Sign Up</button> <!-- Added type="button" -->
                 <a href="#" class="d-md-none mt-3" id="signInMobile">Already have an account? Sign In</a>
             </form>
         </div>
 
         <!-- Sign In Form -->
         <div class="form-container sign-in-container">
+             <!-- Your existing sign-in form -->
             <form action="#">
                 <h1>Sign in</h1>
                 <span>or use your account</span>
                 <br>
                 <input type="email" placeholder="Email" id="e"/>
                 <input type="password" placeholder="Password" id="p"/>
-                <a href="#" class="forgot-password">Forgot your password?</a>
-                <button onclick="signin();">Sign In</button>
+                <!-- UPDATED LINK: Opens the modal -->
+                <a href="#" class="forgot-password" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot your password?</a>
+                <button type="button" onclick="signin();">Sign In</button> <!-- Added type="button" -->
                 <a href="#" class="d-md-none mt-3" id="signUpMobile">Don't have an account? Sign Up</a>
             </form>
         </div>
@@ -363,10 +366,43 @@
         </div>
     </div>
 
+    <!-- NEW: Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel">Reset Your Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Enter the email address associated with your account, and we'll send you a link to reset your password.</p>
+                    <div class="mb-3">
+                        <label for="forgotEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="forgotEmail" placeholder="name@example.com">
+                    </div>
+                    <!-- Alert for messages -->
+                    <div id="forgotAlertContainer"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="sendResetLinkBtn" onclick="sendResetLink();">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                        Send Reset Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END NEW MODAL -->
+
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- UPDATED: Use your existing script.js -->
     <script src="script.js"></script>
+    
     <script>
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
@@ -396,6 +432,123 @@
             e.preventDefault();
             container.classList.remove('right-panel-active');
         });
+
+        // --- NEW SCRIPT.JS FUNCTIONS ---
+        // (You can merge this with your existing script.js)
+
+        // Sign In (from your existing file)
+        function signin() {
+            var email = document.getElementById("e").value;
+            var password = document.getElementById("p").value;
+            
+            var f = new FormData();
+            f.append("e", email);
+            f.append("p", password);
+
+            var r = new XMLHttpRequest();
+            r.onreadystatechange = function() {
+                if (r.readyState == 4 && r.status == 200) {
+                    var t = r.responseText;
+                    if (t == "success") {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Signed In Successfully',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location = "index.php";
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: t
+                        });
+                    }
+                }
+            };
+            r.open("POST", "signInProcess.php", true);
+            r.send(f);
+        }
+
+        // Sign Up (from your existing file)
+        function signUp() {
+            var name = document.getElementById("name").value;
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            var mobile = document.getElementById("mobile").value;
+
+            var f = new FormData();
+            f.append("n", name);
+            f.append("e", email);
+            f.append("p", password);
+            f.append("m", mobile);
+
+            var r = new XMLHttpRequest();
+            r.onreadystatechange = function() {
+                if (r.readyState == 4 && r.status == 200) {
+                    var t = r.responseText;
+                    if (t == "success") {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Account Created',
+                            text: 'You can now sign in.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => {
+                            // Automatically switch to sign-in view
+                            container.classList.remove('right-panel-active');
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: t
+                        });
+                    }
+                }
+            };
+            r.open("POST", "signupprocess.php", true);
+            r.send(f);
+        }
+
+
+        // --- NEW: Forgot Password Function ---
+        function sendResetLink() {
+            const email = document.getElementById('forgotEmail').value;
+            const btn = document.getElementById('sendResetLinkBtn');
+            const spinner = btn.querySelector('.spinner-border');
+            const alertContainer = document.getElementById('forgotAlertContainer');
+
+            // Show loading state
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            alertContainer.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('email', email);
+
+            fetch('forgot_password_process.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(text => {
+                if (text === 'success') {
+                    alertContainer.innerHTML = '<div class="alert alert-success" role="alert">Success! Please check your email for the reset link.</div>';
+                    btn.style.display = 'none'; // Hide button after success
+                } else {
+                    alertContainer.innerHTML = `<div class="alert alert-danger" role="alert">${text}</div>`;
+                    btn.disabled = false;
+                    spinner.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                alertContainer.innerHTML = '<div class="alert alert-danger" role="alert">A connection error occurred. Please try again.</div>';
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            });
+        }
     </script>
 
 </body>
