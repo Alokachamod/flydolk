@@ -21,7 +21,20 @@
       <span id="fd-clock">--:--:--</span>
       <span class="fd-v-divider"></span>
       <i class="fa-solid fa-box-archive"></i>
-      <span id="fd-orders">Orders served: <b>12,487</b></span>
+      <span id="fd-orders">Orders served: <b>
+          <?php
+          try {
+            $q = Database::search("SELECT COUNT(DISTINCT order_id) AS total FROM invoice");
+            if ($q && $data = $q->fetch_assoc()) {
+              echo htmlspecialchars($data['total']);
+            } else {
+              echo "0";
+            }
+          } catch (Exception $e) {
+            echo "0";
+          }
+          ?>
+        </b></span>
     </div>
 
     <div class="row g-3 mt-3">
@@ -42,7 +55,7 @@
 
           <div class="fd-news d-flex align-items-center gap-2 rounded-pill px-2 py-1">
             <input id="fd-news-email" type="email" class="form-control border-0 bg-transparent text-light"
-                   placeholder="Join mission updates (email)" aria-label="Email for newsletter">
+              placeholder="Join mission updates (email)" aria-label="Email for newsletter">
             <button type="button" class="btn rounded-circle" onclick="fdSubscribeNews()" aria-label="Subscribe">
               <i class="fa-solid fa-paper-plane"></i>
             </button>

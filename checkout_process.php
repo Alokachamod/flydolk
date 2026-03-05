@@ -69,11 +69,11 @@ try {
         JOIN product p ON c.product_id = p.id
         WHERE c.user_id = $user_id AND c.id IN ($cart_id_list)
     ");
-    
+
     if ($cart_items_rs->num_rows == 0) {
         throw new Exception("No valid items found in your cart.");
     }
-    
+
     // Check stock levels *before* doing anything else
     $items_to_process = [];
     $total_order_amount = 0;
@@ -84,7 +84,7 @@ try {
         $items_to_process[] = $item;
         $total_order_amount += $item['price'] * $item['order_qty'];
     }
-    
+
     $grand_total = $total_order_amount + $shipping_fee;
 
     // --- 5. SAVE/UPDATE USER ADDRESS ---
@@ -108,7 +108,7 @@ try {
     // --- 6. GENERATE ORDER ID & SAVE INVOICE ITEMS ---
     $order_id_string = "FLYD-" . time() . rand(100, 999);
     $order_date = date('Y-m-d H:i:s');
-    
+
     foreach ($items_to_process as $item) {
         $product_id = $item['product_id'];
         $order_qty = $item['order_qty'];
@@ -137,7 +137,7 @@ try {
             )
         ");
     }
-    
+
     // --- 7. TASK: REMOVE FROM CART ---
     Database::iud("
         DELETE FROM cart 
@@ -147,7 +147,7 @@ try {
     // --- 8. COMMIT & CLEANUP ---
     Database::$connection->commit();
     unset($_SESSION['checkout_items']); // Clear the session
-    
+
     // --- 9. TASK: SEND INVOICE EMAIL ---
     if ($phpMailerInstalled) {
         // We need to fetch the full invoice details to build the email
@@ -156,7 +156,7 @@ try {
         $invoice_html .= "<p>Thank you for your order, $fname!</p>"; // This will use the full name
         $invoice_html .= "<p>Your order will be shipped to: $address_line_1, $zip_code</p>";
         $invoice_html .= "<table border='1' cellpadding='5' cellspacing='0'><tr><th>Product</th><th>Qty</th><th>Total</th></tr>";
-        
+
         foreach ($items_to_process as $item) {
             $invoice_html .= "<tr>";
             $invoice_html .= "<td>" . $item['title'] . "</td>";
@@ -168,7 +168,7 @@ try {
         $invoice_html .= "<p>Subtotal: LKR " . number_format($total_order_amount, 2) . "</p>";
         $invoice_html .= "<p>Shipping: LKR " . number_format($shipping_fee, 2) . "</p>";
         $invoice_html .= "<h3>Total: LKR " . number_format($grand_total, 2) . "</h3>";
-        
+
         // Send the email (this will fail if you don't set up credentials)
         try {
             $mail = new PHPMailer(true);
@@ -177,7 +177,7 @@ try {
             $mail->Host       = 'smtp.example.com'; // **SET YOUR SMTP HOST**
             $mail->SMTPAuth   = true;
             $mail->Username   = 'you@example.com';  // **SET YOUR SMTP USERNAME**
-            $mail->Password   = 'your_password';    // **SET YOUR SMTP PASSWORD**
+            $mail->Password   = 'add your password';    // **SET YOUR SMTP PASSWORD**
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
@@ -202,7 +202,6 @@ try {
     // --- 10. REDIRECT TO SUCCESS ---
     header('Location: order_success.php?order_id=' . $order_id_string);
     exit;
-
 } catch (Exception $e) {
     // --- 11. HANDLE ERRORS ---
     Database::$connection->rollback(); // Undo all changes
@@ -210,5 +209,3 @@ try {
     header('Location: checkout.php?error=' . urlencode($e->getMessage()));
     exit;
 }
-?>
-

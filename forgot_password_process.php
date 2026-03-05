@@ -18,17 +18,17 @@ if (empty($email)) {
 } else {
     Database::setUpConnection();
     $safe_email = Database::$connection->real_escape_string($email);
-    
+
     $rs = Database::search("SELECT * FROM user WHERE email = '$safe_email'");
     if ($rs->num_rows == 1) {
         $user_data = $rs->fetch_assoc();
-        
+
         // Generate a unique verification code
         $verification_code = uniqid();
-        
+
         // Update the user's row with this code
         Database::iud("UPDATE user SET verification_code = '$verification_code' WHERE email = '$safe_email'");
-        
+
         // --- Send Email ---
         $mail = new PHPMailer(true);
         try {
@@ -36,27 +36,27 @@ if (empty($email)) {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com'; // Your SMTP server
             $mail->SMTPAuth   = true;
-            
+
             // --- !! ---
             // **THIS IS THE FIX:**
             // 1. Enter your full Gmail address.
             // 2. Enter the 16-digit "App Password" you generated in your Google Account.
             // --- !! ---
-            $mail->Username   = 'slteengeek@gmail.com'; // <-- FIX 1: YOUR GMAIL
-            $mail->Password   = 'mkjrwdlnthbbapbq';    // <-- FIX 2: YOUR 16-DIGIT APP PASSWORD
-            
+            $mail->Username   = 'your_email@gmail.com'; // <-- FIX 1: YOUR GMAIL
+            $mail->Password   = 'add your password';    // <-- FIX 2: YOUR 16-DIGIT APP PASSWORD
+
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port       = 465;
 
             //Recipients
             // The "From" address MUST be the same as your $mail->Username
-            $mail->setFrom('slteengeek@gmail.com', 'FlyDolk Password Reset');
+            $mail->setFrom('your_email@gmail.com', 'FlyDolk Password Reset');
             $mail->addAddress($email, $user_data['name']);
 
             //Content
             $mail->isHTML(true);
             $mail->Subject = 'Reset Your FlyDolk Password';
-            
+
             // Get the current server host
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
             $host = $_SERVER['HTTP_HOST'];
@@ -84,9 +84,7 @@ if (empty($email)) {
             // This error message is what you are seeing.
             echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
-        
     } else {
         echo "No account found with that email address.";
     }
 }
-?>
