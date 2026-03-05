@@ -42,15 +42,15 @@ if (empty($email)) {
             // 1. Enter your full Gmail address.
             // 2. Enter the 16-digit "App Password" you generated in your Google Account.
             // --- !! ---
-            $mail->Username   = 'your_email@gmail.com'; // <-- FIX 1: YOUR GMAIL
-            $mail->Password   = 'add your password';    // <-- FIX 2: YOUR 16-DIGIT APP PASSWORD
+            $mail->Username   = 'slteengeek@gmail.com'; // <-- FIX 1: YOUR GMAIL
+            $mail->Password   = 'mkjrwdlnthbbapbq';    // <-- FIX 2: YOUR 16-DIGIT APP PASSWORD
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port       = 465;
 
             //Recipients
             // The "From" address MUST be the same as your $mail->Username
-            $mail->setFrom('your_email@gmail.com', 'FlyDolk Password Reset');
+            $mail->setFrom('slteengeek@gmail.com', 'FlyDolk Password Reset');
             $mail->addAddress($email, $user_data['name']);
 
             //Content
